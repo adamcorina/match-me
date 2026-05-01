@@ -231,7 +231,7 @@ function showProfile() {
 }
 
 function copyCode() {
-  const url = "http://match-me.velea.cc/?compare=" + state.myCode;
+  const url = "https://match-me.velea.cc/?compare=" + state.myCode;
   navigator.clipboard.writeText(url).then(() => {
     const btn = document.getElementById("copy-btn");
     btn.textContent = "Copied!";

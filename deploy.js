@@ -30,6 +30,14 @@ async function build() {
   fs.copyFileSync(join(__dirname, "style.css"), join(DIST, "style.css"));
   console.log("Copied style.css");
 
+  for (const file of ["favicon.ico", "favicon.png"].filter(f => fs.existsSync(join(__dirname, f)))) {
+    fs.copyFileSync(join(__dirname, file), join(DIST, file));
+    console.log(`Copied ${file}`);
+  }
+
+  fs.writeFileSync(join(DIST, "CNAME"), "match-me.velea.cc");
+  console.log("Written CNAME");
+
   console.log("\nDeploying to gh-pages...");
   execSync(`cd dist && git init && git add . && git commit -m "deploy" && git push --force ../. HEAD:gh-pages`, { stdio: "inherit" });
   fs.rmSync(DIST, { recursive: true, force: true });
