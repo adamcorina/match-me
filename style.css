@@ -103,6 +103,14 @@ html, body {
   line-height: 1.7;
 }
 
+.sub-note {
+  font-size: 13px;
+  color: var(--text3);
+  margin-top: 1.25rem;
+  margin-bottom: 1.25rem;
+  line-height: 1.6;
+}
+
 .or-divider {
   text-align: center;
   color: var(--text3);

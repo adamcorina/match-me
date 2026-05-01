@@ -1,0 +1,13 @@
+{
+  "name": "match-me",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node deploy.js",
+    "dev": "npx serve ."
+  },
+  "devDependencies": {
+    "terser": "^5.31.0"
+  }
+}
