@@ -468,6 +468,51 @@ html, body {
   margin-bottom: 2rem;
 }
 
+.fit-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 2.5rem;
+}
+
+.fit-block {
+  padding: 16px 18px;
+  border-radius: var(--radius);
+  border-left: 2px solid;
+}
+
+.fit-best {
+  border-color: var(--accent);
+  background: rgba(200,184,154,0.06);
+}
+
+.fit-worst {
+  border-color: rgba(200,184,154,0.35);
+  background: rgba(200,184,154,0.03);
+}
+
+.fit-heading {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text3);
+  margin-bottom: 10px;
+}
+
+.fit-list {
+  margin: 0;
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fit-list li {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.5;
+}
+
 .pdim-row {
   display: flex;
   flex-direction: column;

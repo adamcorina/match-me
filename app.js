@@ -223,6 +223,228 @@ function renderProfile() {
         </div>`;
     }
   });
+
+  renderFitSummary();
+}
+
+const LOVELANG_LABELS = ["Acts of service", "Gifts", "Touch", "Words of affirmation", "Quality time"];
+
+function fitLines(v) {
+  const best = [];
+  const worst = [];
+
+  const lo = d => v[d] !== undefined && v[d] <= 0.8;
+  const hi = d => v[d] !== undefined && v[d] >= 2.2;
+  const ext = (...dims) => Math.max(...dims.map(d => v[d] !== undefined ? Math.abs(v[d] - 1.5) : 0));
+  const pushBest = (dims, text) => best.push({ w: ext(...dims), text });
+  const pushWorst = (dims, text) => worst.push({ w: ext(...dims), text });
+
+  // Communication
+  if (lo("comm")) pushBest(["comm"], "communicates directly and in the moment");
+  if (hi("comm")) pushBest(["comm"], "prefers to process before responding, and doesn't need to talk everything out face to face");
+  if (lo("comm")) pushWorst(["comm"], "needs a lot of time and distance before they can respond to anything emotional");
+  if (hi("comm")) pushWorst(["comm"], "demands immediate face-to-face resolution of everything");
+
+  // Conflict style + resolution pace combined
+  const conflictHi = hi("conflict"), conflictLo = lo("conflict");
+  const cconfLo = lo("cconf"), cconfHi = hi("cconf");
+  if (conflictLo && cconfLo) {
+    pushBest(["conflict", "cconf"], "addresses friction directly and wants it resolved the same day, no lingering tension");
+    pushWorst(["conflict", "cconf"], "avoids conflict and lets things drift unresolved for days");
+  } else if (conflictHi && cconfHi) {
+    pushBest(["conflict", "cconf"], "needs space before revisiting things and is fine letting them settle slowly");
+    pushWorst(["conflict", "cconf"], "demands immediate confrontation and won't rest until it's resolved");
+  } else if (conflictHi && cconfLo) {
+    pushBest(["conflict", "cconf"], "doesn't rush into conflict but still needs things resolved before the day ends, neither pushy nor avoidant");
+    pushWorst(["conflict", "cconf"], "either forces confrontation immediately or lets things fester indefinitely");
+  } else if (conflictLo && cconfHi) {
+    pushBest(["conflict", "cconf"], "addresses things directly but isn't rigid about when it gets fully resolved");
+    pushWorst(["conflict", "cconf"], "either blows up immediately or refuses to ever fully address it");
+  } else if (conflictLo) {
+    pushBest(["conflict"], "addresses friction head-on rather than letting it sit");
+    pushWorst(["conflict"], "avoids conflict entirely or shuts down when things get tense");
+  } else if (conflictHi) {
+    pushBest(["conflict"], "gives things space to settle before revisiting them");
+    pushWorst(["conflict"], "pushes for resolution before you've had time to process");
+  } else if (cconfLo) {
+    pushBest(["cconf"], "needs to resolve things the same day, no overnight tension");
+    pushWorst(["cconf"], "can let unresolved things drift for days or weeks");
+  } else if (cconfHi) {
+    pushBest(["cconf"], "is fine letting things settle in their own time");
+  }
+
+  // Depth
+  if (lo("depth")) {
+    pushBest(["depth"], "goes deep, conceptual conversation, meaning, ideas");
+    pushWorst(["depth"], "keeps everything on the surface and resists going deeper");
+  }
+  if (hi("depth")) pushBest(["depth"], "is grounded and practical rather than endlessly reflective");
+
+  // Independence (differ)
+  if (lo("differ")) {
+    pushBest(["differ"], "is comfortable with real closeness and doesn't need distance to feel like themselves");
+    pushWorst(["differ"], "needs a lot of independence or alone time to feel okay in a relationship");
+  }
+  if (hi("differ")) {
+    pushBest(["differ"], "values their own space and doesn't need constant togetherness");
+    pushWorst(["differ"], "can't function without complete emotional merger");
+  }
+
+  // Direction
+  if (lo("direction")) {
+    pushBest(["direction"], "knows roughly where they're heading in life");
+    pushWorst(["direction"], "has no sense of direction and isn't interested in figuring it out");
+  }
+  if (hi("direction")) pushBest(["direction"], "is comfortable keeping the future open and unscripted");
+
+  // Empathy / support style
+  if (lo("empathy")) {
+    pushBest(["empathy"], "leads with emotional presence when someone's struggling, sits with it rather than trying to fix it");
+    pushWorst(["empathy"], "immediately tries to fix things rather than just being there");
+  }
+  if (hi("empathy")) {
+    pushBest(["empathy"], "reaches for practical solutions rather than sitting in feelings");
+    pushWorst(["empathy"], "expects you to just listen and feel without offering any path forward");
+  }
+
+  // Energy
+  if (lo("energy")) {
+    pushBest(["energy"], "recharges around people and enjoys a shared social life");
+    pushWorst(["energy"], "needs a lot of solitude to recover and rarely wants to be around others");
+  }
+  if (hi("energy")) {
+    pushBest(["energy"], "values solitude and is selective about who they spend time with");
+    pushWorst(["energy"], "has a packed social calendar and treats alone time as wasted time");
+  }
+
+  // Finances
+  if (lo("finances")) {
+    pushBest(["finances"], "treats money as shared, a team thing");
+    pushWorst(["finances"], "insists on total financial independence and keeping everything separate");
+  }
+  if (hi("finances")) pushBest(["finances"], "values financial autonomy and independent decision-making");
+
+  // Humour
+  if (lo("humor")) {
+    pushBest(["humor"], "has an absurdist or dry sense of humour");
+    pushWorst(["humor"], "finds your kind of humour cold or hard to read");
+  }
+  if (hi("humor")) pushBest(["humor"], "is reactive and playful, finds the funny in whatever's in front of them");
+
+  // Intimacy
+  if (lo("intimacy")) {
+    pushBest(["intimacy"], "wants to be fully known, vulnerability isn't scary to them");
+    pushWorst(["intimacy"], "keeps emotional exposure to a minimum");
+  }
+  if (hi("intimacy")) pushBest(["intimacy"], "feels closest through quiet presence and acceptance rather than intense disclosure");
+
+  // Love language
+  if (v.lovelang !== undefined) {
+    const langs = lovelangFromIndex(v.lovelang).map(i => LOVELANG_LABELS[i]);
+    if (langs.length) {
+      pushBest(["lovelang"], `shows care through ${langs.join(" and ").toLowerCase()}`);
+      pushWorst(["lovelang"], "shows care in ways that don't register as care to you");
+    }
+  }
+
+  // Passion
+  if (lo("passion")) {
+    pushBest(["passion"], "places physical chemistry and romantic intensity near the centre of the relationship");
+    pushWorst(["passion"], "treats passion as a nice bonus rather than essential");
+  }
+  if (hi("passion")) pushBest(["passion"], "builds connection through consistency and warmth rather than intensity");
+
+  // Rhythm
+  if (lo("rhythm")) {
+    pushBest(["rhythm"], "checks in often and stays close even in the small moments");
+    pushWorst(["rhythm"], "disappears for days without thinking anything of it");
+  }
+  if (hi("rhythm")) {
+    pushBest(["rhythm"], "is comfortable with loose, low-pressure contact and doesn't need to check in constantly");
+    pushWorst(["rhythm"], "needs daily check-ins to feel secure");
+  }
+
+  // Stability
+  if (lo("stability")) {
+    pushBest(["stability"], "is emotionally steady, a reliable baseline when things get hard");
+    pushWorst(["stability"], "is equally reactive, with no one anchoring the room");
+  }
+  if (hi("stability")) pushBest(["stability"], "is emotionally expressive and sensitive");
+
+  // Values
+  if (lo("values")) {
+    pushBest(["values"], "is reliable, consistent, and shows up when it counts");
+    pushWorst(["values"], "treats commitment as optional and values keeping things loose");
+  }
+  if (hi("values")) pushBest(["values"], "prioritises ease and low-pressure connection over obligation");
+
+  // Admire
+  if (lo("admire")) {
+    pushBest(["admire"], "extends generosity and gives people the benefit of the doubt");
+    pushWorst(["admire"], "defaults to a critical read of people, especially under stress");
+  }
+  if (hi("admire")) pushBest(["admire"], "calls things as they are and doesn't soften the truth");
+
+  // Worldview
+  if (lo("worldview")) {
+    pushBest(["worldview"], "shares a faith-grounded framework for meaning");
+    pushWorst(["worldview"], "has no interest in or patience for faith as part of life");
+  }
+  if (hi("worldview")) {
+    pushBest(["worldview"], "is secular in how they make sense of things");
+    pushWorst(["worldview"], "expects faith to structure daily life and major decisions");
+  }
+
+  // Space
+  if (lo("space")) {
+    pushBest(["space"], "treats home as an ordered, calm space");
+    pushWorst(["space"], "lives in permanent chaos and doesn't see why it matters");
+  }
+  if (hi("space")) pushBest(["space"], "is relaxed about tidiness, home is lived-in");
+
+  // Drive
+  if (lo("drive")) {
+    pushBest(["drive"], "is ambitious and career-oriented");
+    pushWorst(["drive"], "treats work as just a means to an end and is cautious with money");
+  }
+  if (hi("drive")) {
+    pushBest(["drive"], "is lifestyle-led and financially cautious");
+    pushWorst(["drive"], "is defined by ambition and spends freely without thinking");
+  }
+
+  // Attachment
+  if (lo("attach")) pushBest(["attach"], "forms bonds openly and gradually, secure by default");
+  if (hi("attach")) {
+    pushBest(["attach"], "takes their time to attach, no pressure, no rushing it");
+    pushWorst(["attach"], "bonds fast and reads any distance as rejection");
+  }
+
+  const sort = arr => arr.sort((a, b) => b.w - a.w).slice(0, 7).map(x => x.text);
+  return { best: sort(best), worst: sort(worst) };
+}
+
+function renderFitSummary() {
+  const container = document.getElementById("profile-fit");
+  container.innerHTML = "";
+  if (!state.myVector) return;
+
+  const { best, worst } = fitLines(state.myVector);
+  if (!best.length && !worst.length) return;
+
+  const bestHtml = best.map(l => `<li>${l}</li>`).join("");
+  const worstHtml = worst.map(l => `<li>${l}</li>`).join("");
+
+  container.innerHTML = `
+    <div class="fit-section">
+      <div class="fit-block fit-best">
+        <div class="fit-heading">Probably a great fit if they…</div>
+        <ul class="fit-list">${bestHtml}</ul>
+      </div>
+      <div class="fit-block fit-worst">
+        <div class="fit-heading">Likely to clash if they…</div>
+        <ul class="fit-list">${worstHtml}</ul>
+      </div>
+    </div>`;
 }
 
 function showProfile() {
