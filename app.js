@@ -469,23 +469,12 @@ function checkCompat() {
   compareWithCode(code);
 }
 
-function trackVirtualPage(path) {
-  const beacon = document.querySelector("script[data-cf-beacon]");
-  if (!beacon) return;
-  try {
-    const token = JSON.parse(beacon.getAttribute("data-cf-beacon")).token;
-    const payload = { loc: location.origin + path, referrer: location.href, token };
-    navigator.sendBeacon("/cdn-cgi/rum?" + token, new Blob([JSON.stringify(payload)], { type: "application/json" }));
-  } catch (e) {}
-}
-
 function compareWithCode(code) {
   const v2 = decodeVector(code);
   if (!v2) {
     alert("Invalid code. Please check and try again.");
     return;
   }
-  trackVirtualPage("/compare");
   renderResult(state.myVector, v2);
 }
 
