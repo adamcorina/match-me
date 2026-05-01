@@ -460,20 +460,26 @@ function renderFitSummary() {
   const { best, worst } = fitLines(state.myVector);
   if (!best.length && !worst.length) return;
 
+  if (!best.length && !worst.length) {
+    container.innerHTML = `<div class="fit-section"><p class="fit-balanced">You sit close to the middle on most dimensions. You're likely to get along with a wide range of personalities - it can just take longer to find out where the real points of connection are.</p></div>`;
+    return;
+  }
+
   const bestHtml = best.map(l => `<li>${l}</li>`).join("");
   const worstHtml = worst.map(l => `<li>${l}</li>`).join("");
 
-  container.innerHTML = `
-    <div class="fit-section">
+  const bestBlock = best.length ? `
       <div class="fit-block fit-best">
         <div class="fit-heading">Probably a great fit if they…</div>
         <ul class="fit-list">${bestHtml}</ul>
-      </div>
+      </div>` : "";
+  const worstBlock = worst.length ? `
       <div class="fit-block fit-worst">
         <div class="fit-heading">Likely to clash if they…</div>
         <ul class="fit-list">${worstHtml}</ul>
-      </div>
-    </div>`;
+      </div>` : "";
+
+  container.innerHTML = `<div class="fit-section">${bestBlock}${worstBlock}</div>`;
 }
 
 function showProfile() {
