@@ -793,9 +793,9 @@ const CODE_CHARS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWX
 
 function encodeVector(v) {
   return DIM_ORDER.map(d => {
+    if (v[d] === undefined) return "_";
     const meta = DIM_META[d];
-    const raw = v[d] !== undefined ? v[d] : 0;
-    const val = meta && meta.type === "overlap" ? Math.round(raw) : Math.round(raw * 10);
+    const val = meta && meta.type === "overlap" ? Math.round(v[d]) : Math.round(v[d] * 10);
     return CODE_CHARS[val] || "0";
   }).join("");
 }
@@ -804,6 +804,7 @@ function decodeVector(code) {
   if (!code || code.length !== DIM_ORDER.length) return null;
   const v = {};
   for (let i = 0; i < DIM_ORDER.length; i++) {
+    if (code[i] === "_") continue;
     const idx = CODE_CHARS.indexOf(code[i]);
     if (idx === -1) return null;
     const meta = DIM_META[DIM_ORDER[i]];

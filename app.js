@@ -173,7 +173,8 @@ function finishQuiz() {
   const pending = sessionStorage.getItem("pending_code");
   if (pending) {
     sessionStorage.removeItem("pending_code");
-    document.getElementById("input-other-code").value = pending;
+    history.replaceState(null, "", "?me=" + state.myCode + "&compare=" + pending);
+    compareWithCode(pending);
   }
 }
 
@@ -527,6 +528,10 @@ function switchTab(tab) {
     document.getElementById("r-pct").textContent = pct + "%";
     document.getElementById("r-lbl").textContent = scoreLabel(pct);
     setTimeout(() => animateRing(pct), 100);
+  } else {
+    document.getElementById("r-pct").textContent = "—";
+    document.getElementById("r-lbl").textContent = "";
+    setTimeout(() => animateRing(0), 100);
   }
 }
 
@@ -553,18 +558,20 @@ function renderResult(v1, v2) {
     friendshipInsightsEl.innerHTML = "";
   }
 
-  // Relationship dims + score
+  // Relationship dims + score — only count dims exclusive to dating questions
+  const relOnlyDims = [...RELATIONSHIP_DIMS].filter(d => !FRIENDSHIP_DIMS.has(d));
+  const sharedRelOnlyDims = result.sharedDims.filter(d => relOnlyDims.includes(d));
   const relationshipDims = result.sharedDims.filter(d => RELATIONSHIP_DIMS.has(d));
-  tabScores.relationship = relationshipDims.length
+  tabScores.relationship = sharedRelOnlyDims.length
     ? Math.round(relationshipDims.reduce((s, d) => s + result.dims[d], 0) / relationshipDims.length * 100)
     : null;
 
   const rDimsEl = document.getElementById("r-dims-relationship");
   const rInsightsEl = document.getElementById("r-insights-relationship");
 
-  if (!relationshipDims.length) {
+  if (!sharedRelOnlyDims.length) {
     rDimsEl.innerHTML = "";
-    rInsightsEl.innerHTML = `<p class="tab-empty">Neither of you answered the dating questions. Go back and add them to see relationship compatibility.</p>`;
+    rInsightsEl.innerHTML = `<p class="tab-empty">One of you didn't complete this section - relationship compatibility can't be calculated.</p>`;
   } else {
     renderDimCards(result.dims, relationshipDims, v1, v2, "r-dims-relationship");
     const relationshipCombos = allCombos;
