@@ -1,3 +1,6 @@
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+
 // ─── State ────────────────────────────────────────────────────────────────────
 const state = {
   allQ: [...QUESTIONS_CORE],
