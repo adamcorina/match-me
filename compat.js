@@ -3,8 +3,8 @@ const DIM_META = {
   comm:           { label: "Communication",    type: "sim",   lo: "Direct",           hi: "Async"           },
   // Gottman: pursue-withdraw pattern; EFT (Johnson): negative cycle management; too-similar avoiders = festering
   conflict:       { label: "Conflict style",   type: "zone",  lo: "Head-on",          hi: "Avoidant"        },
-  // Big Five extraversion; comp type because moderate difference (anchor + bridge) often works better than a match
-  energy:         { label: "Social energy",    type: "comp",  lo: "Social",           hi: "Solitary"        },
+  // Big Five extraversion; sim type — two introverts or two extroverts are genuinely compatible
+  energy:         { label: "Social energy",    type: "sim",   lo: "Social",           hi: "Solitary"        },
   // Life-goals alignment research; Schwartz value theory — foundational beliefs predict friction under pressure
   values:         { label: "Values",           type: "sim",   lo: "Reliable",         hi: "Independent"     },
   // Contact frequency as attachment expression; links to anxious vs. avoidant baseline needs
@@ -97,9 +97,9 @@ const DIM_INSIGHTS = {
       if (ba === "high") return { type: "strength", text: "You both value solitude and selective socialising. There's little risk of one person dragging the other to events they hate." };
     }
     if ((ba === "low" && bb === "high") || (ba === "high" && bb === "low")) {
-      return { type: "diff", text: "One of you refuels around people; the other refuels alone. This can complement beautifully: the introvert gets a bridge to the world, the extrovert gets an anchor. Or it can become a source of quiet resentment if social calendars are never genuinely negotiated." };
+      return { type: "diff", text: "One of you refuels around people; the other refuels alone. There's real room for growth here — the introvert gets a bridge to the world, the extrovert gets an anchor. It just needs genuine negotiation around social calendars rather than assumptions." };
     }
-    return { type: "diff", text: "Slightly different social rhythms. Not a dealbreaker, but worth agreeing on how much shared social time feels good versus draining for each of you." };
+    return { type: "diff", text: "Slightly different social rhythms. There's room to grow into each other's world here — worth agreeing on what shared social time actually looks like for each of you." };
   },
 
   values(a, b) {
