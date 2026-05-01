@@ -194,16 +194,12 @@ function finishQuiz() {
   }
   state.myCode = encodeVector(state.myVector);
   saveState();
-  history.replaceState(null, "", "?me=" + state.myCode);
-  renderProfile();
 
-  // Check if there was a pending comparison
   const pending = sessionStorage.getItem("pending_code");
-  if (pending) {
-    sessionStorage.removeItem("pending_code");
-    history.replaceState(null, "", "?me=" + state.myCode + "&compare=" + pending);
-    compareWithCode(pending);
-  }
+  if (pending) sessionStorage.removeItem("pending_code");
+  const params = new URLSearchParams({ me: state.myCode });
+  if (pending) params.set("compare", pending);
+  window.location.href = "https://match-me.velea.cc/complete?" + params.toString();
 }
 
 // ─── Profile ──────────────────────────────────────────────────────────────────
