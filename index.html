@@ -78,7 +78,13 @@
         <p>Put this in your bio. Others can use it to see how well you match.</p>
       </div>
       <div class="code-display">
-        <div class="code-value" id="my-code"></div>
+        <div class="code-left">
+          <div id="code-toggle" class="code-toggle" style="display:none">
+            <button class="code-toggle-btn active" data-mode="full" onclick="switchCodeMode('full')">Romantic</button>
+            <button class="code-toggle-btn" data-mode="friendship" onclick="switchCodeMode('friendship')">Friendship</button>
+          </div>
+          <div class="code-value" id="my-code"></div>
+        </div>
         <button class="btn-copy" onclick="copyCode()" id="copy-btn">Copy</button>
       </div>
       <div class="profile-dims" id="profile-dims"></div>
@@ -88,6 +94,7 @@
           <input type="text" id="input-other-code" placeholder="Enter someone's code">
           <button class="btn-primary" onclick="checkCompat()">See compatibility</button>
         </div>
+        <button class="btn-retake" id="btn-add-romantic" onclick="startDatingQuiz()" style="display:none">Add romantic questions</button>
         <button class="btn-retake" onclick="startQuiz()">Retake quiz</button>
       </div>
     </div>

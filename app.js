@@ -4,6 +4,7 @@ const state = {
   answers: [],
   current: 0,
   gatePassed: false,
+  addingRomantic: false,
   myVector: null,
   myCode: null,
 };
@@ -13,6 +14,7 @@ function saveState() {
   if (state.myCode) {
     localStorage.setItem("matchme_code", state.myCode);
     localStorage.setItem("matchme_vector", JSON.stringify(state.myVector));
+    localStorage.setItem("matchme_answers", JSON.stringify(state.answers));
   }
 }
 
@@ -22,6 +24,8 @@ function loadState() {
   if (code && vec) {
     state.myCode = code;
     state.myVector = JSON.parse(vec);
+    const savedAnswers = localStorage.getItem("matchme_answers");
+    if (savedAnswers) state.answers = JSON.parse(savedAnswers);
     return true;
   }
   return false;
@@ -62,6 +66,17 @@ function startQuiz() {
   state.answers = [];
   state.current = 0;
   state.gatePassed = false;
+  state.addingRomantic = false;
+  showScreen("screen-quiz");
+  renderQuestion();
+}
+
+function startDatingQuiz() {
+  state.allQ = [...QUESTIONS_CORE, ...QUESTIONS_DATING];
+  state.answers = new Array(QUESTIONS_CORE.length).fill(undefined);
+  state.current = QUESTIONS_CORE.length;
+  state.gatePassed = true;
+  state.addingRomantic = true;
   showScreen("screen-quiz");
   renderQuestion();
 }
@@ -162,8 +177,21 @@ function chooseDating(yes) {
   renderQuestion();
 }
 
+function friendshipCode(vector) {
+  const friendshipOnly = Object.fromEntries(
+    Object.entries(vector).filter(([d]) => FRIENDSHIP_DIMS.has(d))
+  );
+  return encodeVector(friendshipOnly);
+}
+
 function finishQuiz() {
-  state.myVector = buildVector(state.answers, state.allQ);
+  const newVector = buildVector(state.answers, state.allQ);
+  if (state.addingRomantic && state.myVector) {
+    state.myVector = { ...state.myVector, ...newVector };
+    state.addingRomantic = false;
+  } else {
+    state.myVector = newVector;
+  }
   state.myCode = encodeVector(state.myVector);
   saveState();
   history.replaceState(null, "", "?me=" + state.myCode);
@@ -181,7 +209,11 @@ function finishQuiz() {
 // ─── Profile ──────────────────────────────────────────────────────────────────
 function renderProfile() {
   showScreen("screen-profile");
+  const hasRomantic = [...RELATIONSHIP_DIMS].some(d => !FRIENDSHIP_DIMS.has(d) && state.myVector[d] !== undefined);
+  document.getElementById("code-toggle").style.display = hasRomantic ? "" : "none";
+  document.getElementById("btn-add-romantic").style.display = hasRomantic ? "none" : "";
   document.getElementById("my-code").textContent = state.myCode;
+  document.querySelectorAll(".code-toggle-btn").forEach(b => b.classList.toggle("active", b.dataset.mode === "full"));
 
   // Render dimension bars with pole labels
   const container = document.getElementById("profile-dims");
@@ -454,12 +486,19 @@ function showProfile() {
 }
 
 function copyCode() {
-  const url = "https://match-me.velea.cc/?compare=" + state.myCode;
+  const code = document.getElementById("my-code").textContent;
+  const url = "https://match-me.velea.cc/?compare=" + code;
   navigator.clipboard.writeText(url).then(() => {
     const btn = document.getElementById("copy-btn");
     btn.textContent = "Copied!";
     setTimeout(() => (btn.textContent = "Copy"), 2000);
   });
+}
+
+function switchCodeMode(mode) {
+  const code = mode === "friendship" ? friendshipCode(state.myVector) : state.myCode;
+  document.getElementById("my-code").textContent = code;
+  document.querySelectorAll(".code-toggle-btn").forEach(b => b.classList.toggle("active", b.dataset.mode === mode));
 }
 
 // ─── Compatibility ────────────────────────────────────────────────────────────
