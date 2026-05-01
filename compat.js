@@ -689,10 +689,10 @@ const COMBO_INSIGHTS = [
 ];
 
 function scoreLabel(pct) {
-  return pct >= 80 ? "Strong match"
-       : pct >= 65 ? "Good compatibility"
-       : pct >= 45 ? "Mixed signals"
-       : "Very different styles";
+  return pct >= 80 ? "Smooth sailing"
+       : pct >= 65 ? "A few rough edges"
+       : pct >= 45 ? "Requires real effort"
+       : "High friction";
 }
 
 /**

@@ -474,12 +474,12 @@ function renderFitSummary() {
 
   const bestBlock = best.length ? `
       <div class="fit-block fit-best">
-        <div class="fit-heading">Probably a great fit if they…</div>
+        <div class="fit-heading">Likely to feel easy if they…</div>
         <ul class="fit-list">${bestHtml}</ul>
       </div>` : "";
   const worstBlock = worst.length ? `
       <div class="fit-block fit-worst">
-        <div class="fit-heading">Likely to clash if they…</div>
+        <div class="fit-heading">More friction likely if they…</div>
         <ul class="fit-list">${worstHtml}</ul>
       </div>` : "";
 
