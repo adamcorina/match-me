@@ -597,6 +597,16 @@ function closeAbout(e) {
   }
 }
 
+function openPrivacy() {
+  document.getElementById("privacy-modal").style.display = "flex";
+}
+
+function closePrivacy(e) {
+  if (!e || e.target === document.getElementById("privacy-modal")) {
+    document.getElementById("privacy-modal").style.display = "none";
+  }
+}
+
 // ─── Init ─────────────────────────────────────────────────────────────────────
 (function init() {
   const params = new URLSearchParams(location.search);

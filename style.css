@@ -782,7 +782,15 @@ html, body {
 .app-footer {
   display: flex;
   justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
   padding: 2rem 0 1.5rem;
+}
+
+.app-footer .footer-sep {
+  color: var(--text3);
+  font-size: 12px;
+  pointer-events: none;
 }
 
 .footer-about {
@@ -931,4 +939,55 @@ html, body {
     top: 8px;
     right: 8px;
   }
+}
+
+.privacy-box {
+  max-width: 380px;
+}
+
+.privacy-intro {
+  font-size: 13px;
+  color: var(--text3);
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.privacy-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.privacy-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.privacy-list li:last-child {
+  border-bottom: none;
+}
+
+.privacy-icon {
+  color: var(--accent);
+  font-size: 16px;
+  line-height: 1.5;
+  flex-shrink: 0;
+}
+
+.privacy-sub {
+  display: block;
+  font-size: 12px;
+  color: var(--text3);
+  margin-top: 2px;
+  line-height: 1.5;
 }

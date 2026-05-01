@@ -148,10 +148,43 @@
 <!-- FOOTER -->
 <footer class="app-footer">
   <button class="footer-about" onclick="openAbout()">About this quiz</button>
+  <span class="footer-sep">|</span>
+  <button class="footer-about" onclick="openPrivacy()">Privacy</button>
 </footer>
+
+<!-- PRIVACY MODAL -->
+<div id="privacy-modal" class="about-overlay" style="display:none" onclick="closePrivacy(event)">
+  <div class="about-box privacy-box">
+    <button class="about-close" onclick="closePrivacy()">×</button>
+    <div class="about-logo">Privacy</div>
+    <p class="privacy-intro">This tool is built to be as lightweight as possible on your data.</p>
+    <ul class="privacy-list">
+      <li>
+        <span class="privacy-icon">◦</span>
+        <span>No cookies</span>
+      </li>
+      <li>
+        <span class="privacy-icon">◦</span>
+        <span>No personal data collected</span>
+      </li>
+      <li>
+        <span class="privacy-icon">◦</span>
+        <span>Quiz results never leave your device</span>
+      </li>
+      <li>
+        <span class="privacy-icon">◦</span>
+        <div>
+          <span>Anonymous traffic stats only</span>
+          <span class="privacy-sub">via Cloudflare Web Analytics - no fingerprinting, no cross-site tracking</span>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
 
 <script src="questions.js"></script>
 <script src="compat.js"></script>
 <script src="app.js"></script>
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "6b588925942849d89d60c4fe7e07e8ac"}'></script><!-- End Cloudflare Web Analytics -->
 </body>
 </html>
