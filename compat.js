@@ -782,6 +782,17 @@ function buildVector(answers, questions) {
  * Calculate full compatibility between two vectors.
  * Returns { overall, dims: { dim: score }, label, insights }
  */
+const DIM_WEIGHTS = {
+  attach:    1.5,
+  conflict:  1.5,
+  values:    1.5,
+  stability: 1.5,
+  comm:      1.25,
+  direction: 1.25,
+  worldview: 1.25,
+  admire:    1.25,
+};
+
 function calcCompat(v1, v2) {
   const sharedDims = Object.keys(v1).filter(d => d in v2);
   if (!sharedDims.length) return null;
@@ -791,8 +802,9 @@ function calcCompat(v1, v2) {
     dims[d] = parseFloat(dimScore(d, v1[d], v2[d]).toFixed(3));
   });
 
+  const totalWeight = sharedDims.reduce((s, d) => s + (DIM_WEIGHTS[d] || 1), 0);
   const overall = Math.round(
-    sharedDims.reduce((s, d) => s + dims[d], 0) / sharedDims.length * 100
+    sharedDims.reduce((s, d) => s + dims[d] * (DIM_WEIGHTS[d] || 1), 0) / totalWeight * 100
   );
 
   const label = scoreLabel(overall);

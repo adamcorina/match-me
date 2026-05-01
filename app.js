@@ -544,7 +544,7 @@ function renderResult(v1, v2) {
   // Friendship dims + score
   const friendshipDims = result.sharedDims.filter(d => FRIENDSHIP_DIMS.has(d));
   tabScores.friendship = friendshipDims.length
-    ? Math.round(friendshipDims.reduce((s, d) => s + result.dims[d], 0) / friendshipDims.length * 100)
+    ? Math.round(friendshipDims.reduce((s, d) => s + result.dims[d] * (DIM_WEIGHTS[d] || 1), 0) / friendshipDims.reduce((s, d) => s + (DIM_WEIGHTS[d] || 1), 0) * 100)
     : null;
   renderDimCards(result.dims, friendshipDims, v1, v2, "r-dims-friendship");
 
@@ -563,7 +563,7 @@ function renderResult(v1, v2) {
   const sharedRelOnlyDims = result.sharedDims.filter(d => relOnlyDims.includes(d));
   const relationshipDims = result.sharedDims.filter(d => RELATIONSHIP_DIMS.has(d));
   tabScores.relationship = sharedRelOnlyDims.length
-    ? Math.round(relationshipDims.reduce((s, d) => s + result.dims[d], 0) / relationshipDims.length * 100)
+    ? Math.round(relationshipDims.reduce((s, d) => s + result.dims[d] * (DIM_WEIGHTS[d] || 1), 0) / relationshipDims.reduce((s, d) => s + (DIM_WEIGHTS[d] || 1), 0) * 100)
     : null;
 
   const rDimsEl = document.getElementById("r-dims-relationship");
