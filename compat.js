@@ -666,6 +666,26 @@ const COMBO_INSIGHTS = [
     return null;
   },
 
+  function growthAreas(v1, v2) {
+    const GROWTH_DIMS = {
+      energy:  "<u>Social energy</u>: one of you gets a bridge to the world, the other an anchor.",
+      depth:   "<u>Depth</u>: the person who goes deep can pull the other further than they'd go alone.",
+      empathy: "<u>Support style</u>: emotional and practical instincts together make a more complete pair.",
+      differ:  "<u>Independence</u>: one person's groundedness can give the other permission to be more themselves.",
+      humor:   "<u>Humour</u>: different comedic registers often produce something more interesting than either alone.",
+    };
+    const areas = Object.entries(GROWTH_DIMS)
+      .filter(([d]) => v1[d] !== undefined && v2[d] !== undefined && Math.abs(v1[d] - v2[d]) >= 1.2)
+      .map(([, desc]) => desc);
+    if (areas.length < 2) return null;
+    const list = areas.slice(0, 3).map(a => `<li>${a}</li>`).join("");
+    return {
+      tab: "friendship",
+      type: "diff",
+      text: `Some of the differences here are worth sitting with rather than resolving. There's real room for growth in:<ul>${list}</ul>`,
+    };
+  },
+
 ];
 
 function scoreLabel(pct) {
