@@ -168,12 +168,12 @@ function goNext() {
 function chooseDating(yes) {
   state.gatePassed = true;
   if (yes) state.allQ = [...QUESTIONS_CORE, ...QUESTIONS_DATING];
-  showScreen("screen-quiz");
   state.current++;
   if (state.current >= state.allQ.length) {
     finishQuiz();
     return;
   }
+  showScreen("screen-quiz");
   renderQuestion();
 }
 
