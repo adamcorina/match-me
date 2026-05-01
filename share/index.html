@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    params.set("ref", "share");
+    window.location.replace("https://match-me.velea.cc/?" + params.toString());
+  </script>
+</head>
+</html>

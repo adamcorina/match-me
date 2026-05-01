@@ -487,7 +487,7 @@ function showProfile() {
 
 function copyCode() {
   const code = document.getElementById("my-code").textContent;
-  const url = "https://match-me.velea.cc/?compare=" + code;
+  const url = "https://match-me.velea.cc/share?compare=" + code;
   navigator.clipboard.writeText(url).then(() => {
     const btn = document.getElementById("copy-btn");
     btn.textContent = "Copied!";
