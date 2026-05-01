@@ -39,7 +39,7 @@ async function build() {
   console.log("Written CNAME");
 
   console.log("\nDeploying to gh-pages...");
-  execSync(`cd dist && git init && git add . && git commit -m "deploy" && git push --force ../. HEAD:gh-pages`, { stdio: "inherit" });
+  execSync(`cd dist && git init && git add . && git commit -m "deploy" && git push --force git@github.com:adamcorina/match-me.git HEAD:gh-pages`, { stdio: "inherit" });
   fs.rmSync(DIST, { recursive: true, force: true });
   console.log("\nDone. gh-pages updated.");
 }
