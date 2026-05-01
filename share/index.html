@@ -1,11 +1,54 @@
 <!DOCTYPE html>
-<html>
+<html lang="ro">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>match.me</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0e0e0f;
+      color: #c8b89a;
+      font-family: 'DM Sans', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .logo {
+      font-family: 'DM Serif Display', serif;
+      font-size: 22px;
+      color: #c8b89a;
+    }
+    .dot { color: #444; }
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(200,184,154,0.15);
+      border-top-color: #c8b89a;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      margin-top: 20px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .wrap { display: flex; flex-direction: column; align-items: center; gap: 0; }
+  </style>
+  <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "6b588925942849d89d60c4fe7e07e8ac"}'></script>
   <script>
-    const params = new URLSearchParams(window.location.search);
-    params.set("ref", "share");
-    window.location.replace("https://match-me.velea.cc/?" + params.toString());
+    window.addEventListener("load", function() {
+      setTimeout(function() {
+        const params = new URLSearchParams(window.location.search);
+        window.location.replace("https://match-me.velea.cc/?" + params.toString());
+      }, 300);
+    });
   </script>
 </head>
+<body>
+  <div class="wrap">
+    <div class="logo">match<span class="dot">.</span>me</div>
+    <div class="spinner"></div>
+  </div>
+</body>
 </html>
