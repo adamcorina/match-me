@@ -195,11 +195,18 @@ function finishQuiz() {
   state.myCode = encodeVector(state.myVector);
   saveState();
 
+  const isRomantic = state.addingRomantic === false && [...RELATIONSHIP_DIMS].some(d => !FRIENDSHIP_DIMS.has(d) && state.myVector[d] !== undefined);
+  gtag('event', 'quiz_complete', { quiz_type: isRomantic ? 'romantic' : 'friendship' });
+
+  history.replaceState(null, "", "?me=" + state.myCode);
+  renderProfile();
+
   const pending = sessionStorage.getItem("pending_code");
-  if (pending) sessionStorage.removeItem("pending_code");
-  const params = new URLSearchParams({ me: state.myCode });
-  if (pending) params.set("compare", pending);
-  window.location.href = "https://match-me.velea.cc/complete?" + params.toString();
+  if (pending) {
+    sessionStorage.removeItem("pending_code");
+    history.replaceState(null, "", "?me=" + state.myCode + "&compare=" + pending);
+    compareWithCode(pending);
+  }
 }
 
 // ─── Profile ──────────────────────────────────────────────────────────────────
@@ -489,8 +496,9 @@ function showProfile() {
 
 function copyCode() {
   const code = document.getElementById("my-code").textContent;
-  const url = "https://match-me.velea.cc/share?compare=" + code;
+  const url = "https://match-me.velea.cc/?compare=" + code;
   navigator.clipboard.writeText(url).then(() => {
+    gtag('event', 'share_code_copied');
     const btn = document.getElementById("copy-btn");
     btn.textContent = "Copied!";
     setTimeout(() => (btn.textContent = "Copy"), 2000);
@@ -655,6 +663,7 @@ function closePrivacy(e) {
   const meCode = params.get("me");
 
   if (compareCode) {
+    gtag('event', 'compare');
     const hasProfile = loadState();
     if (hasProfile) {
       compareWithCode(compareCode);

@@ -182,7 +182,7 @@
         <span class="privacy-icon">◦</span>
         <div>
           <span>Anonymous traffic stats only</span>
-          <span class="privacy-sub">via Cloudflare Web Analytics - no fingerprinting, no cross-site tracking</span>
+          <span class="privacy-sub">via Google Analytics - no advertising, no cross-site tracking</span>
         </div>
       </li>
     </ul>
@@ -192,6 +192,13 @@
 <script src="questions.js"></script>
 <script src="compat.js"></script>
 <script src="app.js"></script>
-<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "6b588925942849d89d60c4fe7e07e8ac"}'></script><!-- End Cloudflare Web Analytics -->
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-638H68Q0HC"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-638H68Q0HC');
+</script>
 </body>
 </html>

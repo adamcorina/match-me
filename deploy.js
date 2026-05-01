@@ -35,15 +35,7 @@ async function build() {
     console.log(`Copied ${file}`);
   }
 
-  fs.mkdirSync(join(DIST, "share"), { recursive: true });
-  fs.copyFileSync(join(__dirname, "share/index.html"), join(DIST, "share/index.html"));
-  console.log("Copied share/index.html");
-
-  fs.mkdirSync(join(DIST, "complete"), { recursive: true });
-  fs.copyFileSync(join(__dirname, "complete/index.html"), join(DIST, "complete/index.html"));
-  console.log("Copied complete/index.html");
-
-  fs.writeFileSync(join(DIST, "CNAME"), "match-me.velea.cc");
+fs.writeFileSync(join(DIST, "CNAME"), "match-me.velea.cc");
   console.log("Written CNAME");
 
   console.log("\nDeploying to gh-pages...");
