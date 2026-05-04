@@ -175,13 +175,13 @@ const QUESTIONS_CORE = [
   },
   {
     section: "Humour",
-    q: "Your humour is mostly...",
+    q: "Your humour is mostly... Pick up to 2.",
     opts: [
       "Absurd and surreal. Non-sequiturs, weird logic, jokes that need a very specific receiver",
       "Dry and ironic. Deadpan, subtext, you have to be paying attention",
       "Playful and teasing. I joke about people as much as myself, all in good fun"
     ],
-    dim: "humor", w: [0, 1, 2]
+    dim: "humor", w: [0, 1, 2], multiSelect: 2
   },
   {
     section: "Humour",

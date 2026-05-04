@@ -722,7 +722,15 @@ function buildVector(answers, questions) {
     if (answers[i] === undefined) return;
     const d = q.dim;
     if (q.multiSelect) {
-      multi[d] = answers[i];
+      const meta = DIM_META[d];
+      if (meta && meta.type === "overlap") {
+        multi[d] = answers[i];
+      } else {
+        // average the weights of selected options
+        const sel = answers[i];
+        if (!sums[d]) { sums[d] = 0; counts[d] = 0; }
+        sel.forEach(idx => { sums[d] += q.w[idx]; counts[d]++; });
+      }
     } else {
       if (!sums[d]) { sums[d] = 0; counts[d] = 0; }
       sums[d] += q.w[answers[i]];
