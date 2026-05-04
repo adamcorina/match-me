@@ -302,9 +302,9 @@ const QUESTIONS_DATING = [
       "Stability. A place, a person, a good routine",
       "Freedom. Flexibility to move and change",
       "Growth. Projects, adventures, building something",
-      "Not sure, I prefer to see how it unfolds"
+      "Connection. Wherever the right people are, that's where I want to be"
     ],
-    dim: "direction", w: [0, 3, 1, 2]
+    dim: "direction"
   },
   {
     section: "Direction",

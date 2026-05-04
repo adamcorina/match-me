@@ -24,7 +24,7 @@ const DIM_META = {
   // Sternberg: intimacy vertex; Schnarch: self-validated vs. other-validated closeness needs
   intimacy:       { label: "Intimacy",         type: "sim",   lo: "Vulnerable",       hi: "Quiet presence"  },
   // Life-stage alignment research: children, geography, lifestyle – misalignment is a slow-burn incompatibility
-  direction:           { label: "Direction",        type: "sim",   lo: "Settled",          hi: "Open future"     },
+  direction:           { label: "Direction",        type: "exact", cats: ["Stability", "Freedom", "Growth", "Connection"] },
   // Children: one of the highest-stakes compatibility signals; hard incompatibility should outweigh averages
   direction_children:  { label: "Children",         type: "sim",   lo: "Definitely yes",   hi: "Definitely no"   },
   // Chapman: 5 Love Languages – care given in the wrong language doesn't land even when genuine
@@ -229,16 +229,16 @@ const DIM_INSIGHTS = {
   },
 
   direction(a, b) {
-    const ba = bucket(a), bb = bucket(b);
-    if (ba === bb) {
-      if (ba === "low")  return { type: "strength", text: "You're both oriented toward stability: a settled life, commitment, probably a family. Long-term alignment is strong." };
-      if (ba === "mid")  return { type: "strength", text: "You're at similar life stages and broadly aligned on where you're heading. Enough common ground not to be pulling in opposite directions." };
-      if (ba === "high") return { type: "strength", text: "You're both comfortable with an open, unscripted future. Low pressure, no fixed plan." };
+    const cats = ["stability", "freedom", "growth", "connection"];
+    if (a === b) {
+      return { type: "strength", text: `You're both oriented toward ${cats[a]}. Long-term, you're pulling in the same direction.` };
     }
-    if ((ba === "low" && bb === "high") || (ba === "high" && bb === "low")) {
-      return { type: "diff", text: "One of you wants a settled, structured life; the other wants to keep things open. This is worth a real conversation. Quietly hoping the other will come around rarely ends well." };
+    const na = cats[a], nb = cats[b];
+    // stability vs freedom is the sharpest tension
+    if ((a === 0 && b === 1) || (a === 1 && b === 0)) {
+      return { type: "diff", text: "One of you wants roots — a place, a person, a routine. The other wants to keep things open and flexible. This gap tends to stay quiet until a real decision forces it into the open." };
     }
-    return { type: "diff", text: "Slightly different long-term orientations. Worth checking in on what you both actually want a few years from now, not to make a plan, but to know you're pointing in roughly the same direction." };
+    return { type: "diff", text: `One of you is oriented toward ${na}; the other toward ${nb}. Worth a real conversation about what the next few years actually look like for each of you.` };
   },
 
   direction_children(a, b) {
@@ -559,7 +559,7 @@ const COMBO_INSIGHTS = [
     if (v1.values === undefined || v2.values === undefined) return null;
     if (v1.direction === undefined || v2.direction === undefined) return null;
     const valuesClose  = v1.values === v2.values;
-    const directionFar = Math.abs(v1.direction - v2.direction) >= 1.5;
+    const directionFar = v1.direction !== v2.direction;
     if (valuesClose && directionFar) {
       return { tab: "relationship", type: "diff", text: "You share a lot of the same values but want quite different things from the future. This is one of the more quietly painful incompatibilities. Everything feels right until you talk about what comes next." };
     }
@@ -649,7 +649,7 @@ const COMBO_INSIGHTS = [
     if (v1.drive === undefined || v2.drive === undefined) return null;
     if (v1.direction === undefined || v2.direction === undefined) return null;
     const driveFar     = Math.abs(v1.drive - v2.drive) >= 1.5;
-    const directionFar = Math.abs(v1.direction - v2.direction) >= 1.5;
+    const directionFar = v1.direction !== v2.direction;
     if (driveFar && directionFar) {
       return { tab: "relationship", type: "diff", text: "You want different things from the future and have quite different orientations toward work and ambition. These two gaps tend to compound: how hard you push, what you're willing to sacrifice, and what a good life looks like all pull in different directions at once." };
     }
@@ -690,7 +690,7 @@ const COMBO_INSIGHTS = [
     if (v1.drive === undefined || v2.drive === undefined) return null;
     if (v1.direction === undefined || v2.direction === undefined) return null;
     const driveClose     = Math.abs(v1.drive - v2.drive) <= 0.8;
-    const directionClose = Math.abs(v1.direction - v2.direction) <= 0.8;
+    const directionClose = v1.direction === v2.direction;
     if (driveClose && directionClose) {
       return { tab: "relationship", type: "strength", text: "Similar ambitions and a shared sense of where you're both heading. The practical layer of a relationship — the decisions, the trade-offs, the plans — is unlikely to be a source of friction between you." };
     }
