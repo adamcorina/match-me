@@ -157,9 +157,11 @@ const QUESTIONS_CORE = [
     opts: [
       "Absurd and surreal. Non-sequiturs, weird logic, jokes that need a very specific receiver",
       "Dry and ironic. Deadpan, subtext, you have to be paying attention",
-      "Playful and teasing. I joke about people as much as myself, all in good fun"
+      "Playful and teasing. I joke about people as much as myself, all in good fun",
+      "Dark or taboo. I find the uncomfortable things funny",
+      "Physical and reactive. Impressions, faces, timing — more body than words"
     ],
-    dim: "humor", w: [0, 1, 2], multiSelect: 2
+    dim: "humor", multiSelect: 2
   },
   {
     section: "Conflict",

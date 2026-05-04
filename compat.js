@@ -16,7 +16,7 @@ const DIM_META = {
   // Sternberg: intimacy vertex (closeness, bondedness); appetite for meaningful vs. surface conversation
   depth:          { label: "Depth",            type: "sim",   lo: "Conceptual",       hi: "Practical"       },
   // Shared comedic register as social bonding signal; mismatched humour slows rapport under guardedness
-  humor:          { label: "Humour",           type: "sim",   lo: "Absurdist",        hi: "Playful",         max: 2 },
+  humor:          { label: "Humour",           type: "overlap", cats: ["Absurd", "Dry", "Playful", "Dark", "Physical"] },
   // Schnarch: differentiation – naming limits without fusion or distance; Tatkin: secure functioning
   boundaries:     { label: "Boundaries",       type: "sim",   lo: "Direct",           hi: "Absorbs quietly" },
   // Bowlby / Hazan & Shaver / Johnson: secure, anxious, avoidant patterns; zone catches both extremes
@@ -166,16 +166,23 @@ const DIM_INSIGHTS = {
   },
 
   humor(a, b) {
-    const ba = bucket(a), bb = bucket(b);
-    if (ba === bb) {
-      if (ba === "low")  return { type: "strength", text: "Your humour runs in similar channels: absurdist, strange, a little chaotic. You'll make each other laugh in ways most people wouldn't understand, and that shared frequency tends to create real closeness." };
-      if (ba === "mid")  return { type: "strength", text: "Dry wit and irony on both sides. The dynamic is likely to be sharp and fun. You'll pick up on each other's subtext without having to flag it." };
-      if (ba === "high") return { type: "strength", text: "You're both reactive and observational. You find the funny in whatever's in front of you. Easy to laugh together, low risk of jokes landing wrong." };
+    const cats = ["absurd", "dry", "playful", "dark", "physical"];
+    const s1 = pick2FromIndex(a);
+    const s2 = pick2FromIndex(b);
+    const shared = s1.filter(x => s2.includes(x));
+    if (shared.length > 0 && shared.length === s1.length && shared.length === s2.length) {
+      const names = shared.map(i => cats[i]).join(" and ");
+      return { type: "strength", text: `You share the same comedic register: ${names}. You'll make each other laugh in ways that don't need explaining.` };
     }
-    if ((ba === "low" && bb === "high") || (ba === "high" && bb === "low")) {
-      return { type: "diff", text: "Different comedic sensibilities. One of you needs a specific receiver: absurdist or dry humour requires calibration. The other is more reactive and open. This rarely breaks a connection, but early on the niche humour can read as cold or strange before the other person has the key to it." };
+    if (shared.length > 0) {
+      const names = shared.map(i => cats[i]).join(" and ");
+      return { type: "strength", text: `You overlap on ${names} humour. Enough of a shared register to find each other funny without having to translate.` };
     }
-    return { type: "diff", text: "Slightly different humour styles, probably close enough to find a shared register quickly. The main thing to watch is teasing: what reads as playful in one style can land as pointed in another." };
+    const hasNiche = s1.concat(s2).some(i => i === 0 || i === 1 || i === 3); // absurd, dry, or dark
+    if (hasNiche) {
+      return { type: "diff", text: "No overlap in humour styles, and at least one of you runs niche — absurd, dry, or dark. That kind of humour needs a calibrated receiver. Early on it can read as cold or strange before the other person has the key to it." };
+    }
+    return { type: "diff", text: "Different humour styles with no direct overlap. Probably fine once you know each other, but the early dynamic may feel a little mismatched before a shared register develops." };
   },
 
   boundaries(a, b) {
@@ -255,8 +262,8 @@ const DIM_INSIGHTS = {
 
   lovelang(a, b) {
     const cats = ["acts of service", "gifts", "touch", "words of affirmation", "quality time"];
-    const s1 = lovelangFromIndex(a);
-    const s2 = lovelangFromIndex(b);
+    const s1 = pick2FromIndex(a);
+    const s2 = pick2FromIndex(b);
     const shared = s1.filter(x => s2.includes(x));
     if (shared.length === s1.length && shared.length === s2.length) {
       const names = shared.map(i => cats[i]).join(" and ");
@@ -460,9 +467,10 @@ const COMBO_INSIGHTS = [
   function humorAuth(v1, v2) {
     if (v1.humor === undefined || v2.humor === undefined) return null;
     if (v1.auth === undefined || v2.auth === undefined) return null;
-    const humorFar    = Math.abs(v1.humor - v2.humor) >= 1.5;
+    const s1 = pick2FromIndex(v1.humor), s2 = pick2FromIndex(v2.humor);
+    const noOverlap   = s1.filter(x => s2.includes(x)).length === 0;
     const bothGuarded = v1.auth >= 2 && v2.auth >= 2;
-    if (humorFar && bothGuarded) {
+    if (noOverlap && bothGuarded) {
       return { tab: "friendship", type: "diff", text: "Different humour wavelengths and both of you slow to lower your guard. The early stages of this connection may feel a little stilted. Shared laughter is one of the fastest ways two guarded people open up; without it, the warm-up period gets longer." };
     }
     return null;
@@ -502,7 +510,8 @@ const COMBO_INSIGHTS = [
     if (v1.depth === undefined || v2.depth === undefined) return null;
     if (v1.humor === undefined || v2.humor === undefined) return null;
     const deepBoth   = v1.depth <= 1 && v2.depth <= 1;
-    const humorClose = Math.abs(v1.humor - v2.humor) <= 0.8;
+    const s1 = pick2FromIndex(v1.humor), s2 = pick2FromIndex(v2.humor);
+    const humorClose = s1.filter(x => s2.includes(x)).length > 0;
     if (deepBoth && humorClose) {
       return { tab: "friendship", type: "strength", text: "You share both a taste for real conversation and a similar comedic sensibility. Those two things together tend to produce the kind of connection that feels easy and genuinely alive, the kind people describe as rare." };
     }
@@ -713,8 +722,8 @@ function dimScore(dim, a, b) {
 
     case "overlap": {
       // Jaccard similarity on the two love language selections
-      const s1 = new Set(lovelangFromIndex(a));
-      const s2 = new Set(lovelangFromIndex(b));
+      const s1 = new Set(pick2FromIndex(a));
+      const s2 = new Set(pick2FromIndex(b));
       const intersection = [...s1].filter(x => s2.has(x)).length;
       const union = new Set([...s1, ...s2]).size;
       return union === 0 ? 0 : intersection / union;
@@ -730,7 +739,7 @@ function dimScore(dim, a, b) {
 
 // All possible selections for a 5-option pick-up-to-2 question, sorted for stable encoding.
 // Index 0–4: single picks. Index 5–14: pairs.
-const LOVELANG_COMBOS = [
+const PICK2_COMBOS = [
   [0],[1],[2],[3],[4],
   [0,1],[0,2],[0,3],[0,4],
   [1,2],[1,3],[1,4],
@@ -738,13 +747,13 @@ const LOVELANG_COMBOS = [
   [3,4]
 ];
 
-function lovelangToIndex(sel) {
+function pick2ToIndex(sel) {
   const sorted = [...sel].sort((a,b) => a-b);
-  return LOVELANG_COMBOS.findIndex(c => c.length === sorted.length && c.every((v,i) => v === sorted[i]));
+  return PICK2_COMBOS.findIndex(c => c.length === sorted.length && c.every((v,i) => v === sorted[i]));
 }
 
-function lovelangFromIndex(idx) {
-  return LOVELANG_COMBOS[idx] || [0];
+function pick2FromIndex(idx) {
+  return PICK2_COMBOS[idx] || [0];
 }
 
 /**
@@ -776,7 +785,7 @@ function buildVector(answers, questions) {
   });
   const v = {};
   for (const d in sums) v[d] = parseFloat((sums[d] / counts[d]).toFixed(3));
-  for (const d in multi) v[d] = lovelangToIndex(multi[d]);
+  for (const d in multi) v[d] = pick2ToIndex(multi[d]);
   return v;
 }
 
