@@ -224,10 +224,12 @@ function renderProfile() {
     if (!meta) return;
     const val = state.myVector[d];
 
-    if (meta.display === "category") {
+    if (meta.display === "category" || meta.type === "exact" || meta.type === "overlap") {
       let activeIndices;
       if (meta.type === "overlap") {
-        activeIndices = new Set(lovelangFromIndex(val));
+        activeIndices = new Set(pick2FromIndex(val));
+      } else if (meta.type === "exact") {
+        activeIndices = new Set([val]);
       } else {
         const count = meta.cats.length;
         activeIndices = new Set([Math.min(Math.round((val / 3) * (count - 1)), count - 1)]);
@@ -373,7 +375,7 @@ function fitLines(v) {
 
   // Love language
   if (v.lovelang !== undefined) {
-    const langs = lovelangFromIndex(v.lovelang).map(i => LOVELANG_LABELS[i]);
+    const langs = pick2FromIndex(v.lovelang).map(i => LOVELANG_LABELS[i]);
     if (langs.length) {
       pushBest(["lovelang"], `shows care through ${langs.join(" and ").toLowerCase()}`);
       pushWorst(["lovelang"], "shows care in ways that don't register as care to you");
@@ -551,12 +553,12 @@ function renderDimCards(dims, sharedDims, v1, v2, containerId) {
   });
 }
 
-const tabScores = { friendship: null, relationship: null };
+const tabScores = { friendship: null, relationship: null, spark: null };
 
-function animateRing(pct) {
+function animateRing(id, pct) {
   const circumference = 326.7;
   const offset = circumference - (pct / 100) * circumference;
-  const ring = document.getElementById("ring-fg");
+  const ring = document.getElementById(id);
   ring.style.strokeDashoffset = offset;
   ring.style.stroke = pct >= 65 ? "#c8b89a"
                     : pct >= 40 ? "rgba(200,184,154,0.5)"
@@ -573,11 +575,22 @@ function switchTab(tab) {
   if (pct !== null) {
     document.getElementById("r-pct").textContent = pct + "%";
     document.getElementById("r-lbl").textContent = scoreLabel(pct);
-    setTimeout(() => animateRing(pct), 100);
+    setTimeout(() => animateRing("ring-fg", pct), 100);
   } else {
     document.getElementById("r-pct").textContent = "—";
     document.getElementById("r-lbl").textContent = "";
-    setTimeout(() => animateRing(0), 100);
+    setTimeout(() => animateRing("ring-fg", 0), 100);
+  }
+
+  const spark = tabScores.spark;
+  if (spark !== null) {
+    document.getElementById("r-spark-pct").textContent = spark.score + "%";
+    document.getElementById("r-spark-lbl").textContent = spark.label;
+    setTimeout(() => animateRing("ring-spark-fg", spark.score), 100);
+  } else {
+    document.getElementById("r-spark-pct").textContent = "—";
+    document.getElementById("r-spark-lbl").textContent = "";
+    setTimeout(() => animateRing("ring-spark-fg", 0), 100);
   }
 }
 
@@ -586,6 +599,8 @@ function renderResult(v1, v2) {
   if (!result) return;
 
   showScreen("screen-result");
+
+  tabScores.spark = result.spark;
 
   // Friendship dims + score
   const friendshipDims = result.sharedDims.filter(d => FRIENDSHIP_DIMS.has(d));

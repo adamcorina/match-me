@@ -647,12 +647,21 @@ html, body {
   width: 100%;
 }
 
+.result-scores {
+  display: flex;
+  gap: 2.5rem;
+  justify-content: center;
+  margin-bottom: 2.5rem;
+}
+
 .result-score-wrap {
   position: relative;
-  width: 140px;
-  height: 140px;
-  margin: 0 auto 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
 }
+
 
 .ring-svg {
   width: 140px;
@@ -674,6 +683,12 @@ html, body {
   transition: stroke-dashoffset 1s ease, stroke .3s;
 }
 
+.result-ring-wrap {
+  position: relative;
+  width: 140px;
+  height: 140px;
+}
+
 .result-score-inner {
   position: absolute;
   inset: 0;
@@ -681,12 +696,28 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 2px;
+  padding: 0 8px;
 }
 
 .result-pct {
   font-family: 'DM Serif Display', serif;
-  font-size: 2rem;
+  font-size: 1.6rem;
   line-height: 1;
+}
+
+.result-score-title {
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.result-score-sub {
+  font-size: 10px;
+  color: var(--text3);
+  text-align: center;
+  line-height: 1.3;
 }
 
 .result-lbl {

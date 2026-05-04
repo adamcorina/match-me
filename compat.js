@@ -720,7 +720,7 @@ const COMBO_INSIGHTS = [
 function scoreLabel(pct) {
   return pct >= 80 ? "Smooth sailing"
        : pct >= 65 ? "A few rough edges"
-       : pct >= 45 ? "Requires real effort"
+       : pct >= 45 ? "Noticeably different"
        : "High friction";
 }
 
@@ -825,6 +825,41 @@ const DIM_WEIGHTS = {
   lifestyle: 1.0,
 };
 
+// Each entry: [dim, isHealthy(v), isStretched(v)]
+// isHealthy = the person modelling the growth behaviour
+// isStretched = the person who benefits from exposure to it
+const SPARK_VECTORS = [
+  ["conflict",  v => v.conflict  !== undefined && v.conflict  <= 1,   v => v.conflict  !== undefined && v.conflict  >= 2  ],
+  ["empathy",   v => v.empathy   !== undefined && v.empathy   <= 0.8,  v => v.empathy   !== undefined && v.empathy   >= 2  ],
+  ["auth",      v => v.auth      !== undefined && v.auth      <= 1,   v => v.auth      !== undefined && v.auth      >= 2  ],
+  ["boundaries",v => v.boundaries!== undefined && v.boundaries<= 1,   v => v.boundaries!== undefined && v.boundaries>= 2  ],
+  ["attach",    v => v.attach    !== undefined && v.attach    <= 1,   v => v.attach    !== undefined && v.attach    >= 1.5],
+  ["stability", v => v.stability !== undefined && v.stability <= 0.8,  v => v.stability !== undefined && v.stability >= 2  ],
+  ["differ",    v => v.differ    !== undefined && v.differ    >= 2,   v => v.differ    !== undefined && v.differ    <= 0.8],
+];
+
+function calcSpark(v1, v2) {
+  let bothWays = 0, oneWay = 0;
+  const total = SPARK_VECTORS.length;
+
+  SPARK_VECTORS.forEach(([dim, healthy, stretched]) => {
+    if (v1[dim] === undefined || v2[dim] === undefined) return;
+    const v1GrowsFromV2 = healthy(v2) && stretched(v1);
+    const v2GrowsFromV1 = healthy(v1) && stretched(v2);
+    if (v1GrowsFromV2 && v2GrowsFromV1) bothWays++;
+    else if (v1GrowsFromV2 || v2GrowsFromV1) oneWay++;
+  });
+
+  const score = Math.round((bothWays * 2 + oneWay) / (total * 2) * 100);
+  return { score, label: sparkLabel(score) };
+}
+
+function sparkLabel(pct) {
+  return pct >= 60 ? "A lot to learn from each other"
+       : pct >= 35 ? "Some complementary tension"
+       : "Similar ground";
+}
+
 function calcCompat(v1, v2) {
   const sharedDims = Object.keys(v1).filter(d => d in v2);
   if (!sharedDims.length) return null;
@@ -840,6 +875,7 @@ function calcCompat(v1, v2) {
   );
 
   const label = scoreLabel(overall);
+  const spark = calcSpark(v1, v2);
 
   // Cross-dimension combo insights only (per-dim insights rendered inline with cards)
   const insights = [];
@@ -849,7 +885,7 @@ function calcCompat(v1, v2) {
   });
   insights.sort((a, b) => (a.type === "strength" ? -1 : 1) - (b.type === "strength" ? -1 : 1));
 
-  return { overall, dims, label, insights, sharedDims, _v1: v1, _v2: v2 };
+  return { overall, dims, label, spark, insights, sharedDims, _v1: v1, _v2: v2 };
 }
 
 const DIM_ORDER = ["admire","attach","auth","boundaries","cconf","comm","conflict","depth","differ","direction","direction_children","drive","empathy","energy","finances","humor","intimacy","lifestyle","lovelang","passion","rhythm","roles","space","stability","values","worldview"];
