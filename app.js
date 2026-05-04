@@ -242,7 +242,7 @@ function renderProfile() {
           <div class="pcat-boxes">${boxes}</div>
         </div>`;
     } else {
-      const pct = Math.round((val / 3) * 100);
+      const pct = Math.round((val / (meta.max || 3)) * 100);
       container.innerHTML += `
         <div class="pdim-row">
           <div class="pdim-label">${meta.label}</div>
@@ -523,7 +523,7 @@ function compareWithCode(code) {
   renderResult(state.myVector, v2);
 }
 
-const FRIENDSHIP_DIMS = new Set(["comm","conflict","energy","rhythm","empathy","humor","boundaries","stability","values","depth","auth"]);
+const FRIENDSHIP_DIMS = new Set(["comm","conflict","energy","rhythm","empathy","humor","boundaries","stability","values","depth","auth","lifestyle"]);
 const RELATIONSHIP_DIMS = new Set(["comm","conflict","energy","rhythm","empathy","humor","boundaries","stability","values","depth","auth","attach","intimacy","direction","lovelang","cconf","passion","differ","drive","worldview","space","admire","finances"]);
 
 function renderDimCards(dims, sharedDims, v1, v2, containerId) {

@@ -63,21 +63,10 @@ const QUESTIONS_CORE = [
       "Growth. Pushing each other to be better",
       "Ease. Feeling good together without having to work at it"
     ],
-    dim: "values", w: [0, 2, 1, 3]
+    dim: "values"
   },
   {
-    section: "Values",
-    q: "You have an unexpected free month, no obligations. You'd most want to...",
-    opts: [
-      "Settle into a good routine. Cook, read, see the same people regularly",
-      "Travel somewhere new, say yes to things, no fixed plan",
-      "Go deep on something. A project, a relationship, an idea",
-      "Decompress. Low effort, low stakes, just feel at ease"
-    ],
-    dim: "values", w: [0, 3, 1, 2]
-  },
-  {
-    section: "Values",
+    section: "Boundaries",
     q: "A friend asks a big favor at the worst moment for you. You...",
     opts: [
       "Help. That's what friends do",
@@ -85,7 +74,7 @@ const QUESTIONS_CORE = [
       "Say not now, but offer an alternative",
       "Decline. I need to put myself first sometimes"
     ],
-    dim: "values", w: [0, 1, 2, 3]
+    dim: "boundaries", w: [0, 1, 2, 3]
   },
   {
     section: "Rhythm",
@@ -163,17 +152,6 @@ const QUESTIONS_CORE = [
     dim: "depth", w: [0, 1, 3, 1.5]
   },
   {
-    section: "Depth",
-    q: "When you're going through something difficult, what helps you process it?",
-    opts: [
-      "Talking it through with someone. I understand what I feel by saying it out loud",
-      "Writing it down. Getting it out of my head and onto paper",
-      "Sitting with it alone until it settles",
-      "Doing something. Movement, work, anything that gets me out of my head"
-    ],
-    dim: "depth", w: [0, 1, 2, 3]
-  },
-  {
     section: "Humour",
     q: "Your humour is mostly... Pick up to 2.",
     opts: [
@@ -184,14 +162,14 @@ const QUESTIONS_CORE = [
     dim: "humor", w: [0, 1, 2], multiSelect: 2
   },
   {
-    section: "Humour",
+    section: "Conflict",
     q: "Someone uses humour to lighten a tense moment. You...",
     opts: [
       "Appreciate it. Laughter is how I navigate hard things too",
       "Go along with it, though I need the serious part addressed eventually",
       "Find it deflecting. Some moments need to be felt, not laughed off"
     ],
-    dim: "humor", w: [0, 1, 2]
+    dim: "conflict", w: [0, 1, 2]
   },
   {
     section: "Boundaries",
@@ -205,14 +183,14 @@ const QUESTIONS_CORE = [
     dim: "boundaries", w: [0, 1, 2, 3]
   },
   {
-    section: "Boundaries",
+    section: "Independence",
     q: "You've been spending a lot of time with someone you care about. After a few days, you...",
     opts: [
       "I start to feel the pull to decompress. Even if it's been great, I need time to myself to reset",
       "Don't really notice. I'd happily keep going",
       "Actually find it harder when it ends. Connection is what recharges me"
     ],
-    dim: "boundaries", w: [0, 1, 2]
+    dim: "differ", w: [2, 1, 0]
   },
   {
     section: "Emotional tone",
@@ -227,13 +205,14 @@ const QUESTIONS_CORE = [
   },
   {
     section: "Emotional tone",
-    q: "Your general outlook on things tends to be...",
+    q: "When something throws you off – an unexpected change, a tense interaction – the feeling is usually...",
     opts: [
-      "Optimistic. I default to things working out",
-      "Realistic. I try to see things as they are",
-      "Cautious. I'd rather expect less and be pleasantly surprised"
+      "Barely registers. I adapt without much internal reaction",
+      "Noticeable but contained. I feel it and move through it",
+      "It takes over for a bit. Hard to focus on other things until it settles",
+      "Strong and immediate. My whole state shifts when something hits me"
     ],
-    dim: "stability", w: [0, 1, 2]
+    dim: "stability", w: [0, 1, 2, 3]
   },
   {
     section: "Social energy",
@@ -246,15 +225,15 @@ const QUESTIONS_CORE = [
     dim: "energy", w: [0, 1, 2]
   },
   {
-    section: "Values",
-    q: "Outside of work and close relationships, your energy mostly goes toward...",
+    section: "Lifestyle",
+    q: "When you have genuinely free time with no obligations, your natural pull is toward...",
     opts: [
-      "Active and outdoors. I need movement and fresh air",
-      "Creative or intellectual things. Making, reading, building ideas",
-      "Social things. Events, people, experiences",
-      "Rest and recovery. I protect my downtime fiercely"
+      "Getting things done. I feel better when I've used the time well",
+      "Making or building something. Creative output feels like rest to me",
+      "Being present. A walk, a meal, a conversation – nothing that needs to be produced",
+      "Doing as little as possible. Real rest means switching off completely"
     ],
-    dim: "values", w: [0, 1, 2, 3]
+    dim: "lifestyle", w: [0, 1, 2, 3]
   },
 ];
 
@@ -334,7 +313,7 @@ const QUESTIONS_DATING = [
       "Maybe, I'm not sure",
       "Not for me"
     ],
-    dim: "direction", w: [0, 1, 2, 3]
+    dim: "direction_children", w: [0, 1, 2, 3]
   },
   {
     section: "Love language",
@@ -414,14 +393,14 @@ const QUESTIONS_DATING = [
     dim: "differ", w: [3, 2, 0]
   },
   {
-    section: "Values",
-    q: "When it comes to how you spend your free time together, you'd want...",
+    section: "Lifestyle",
+    q: "When you have a free day with a partner and no plans, you'd naturally...",
     opts: [
-      "Someone who matches my energy. We do things, we're active, we're out",
-      "A mix. Some adventures, some slow days",
-      "Someone low-key. Comfort, ease, no pressure to be anywhere"
+      "Want to make something of it. A trip, a project, something to show for it",
+      "Mix it up. Some activity, some downtime",
+      "Let it unfold slowly. Nowhere to be is the whole point"
     ],
-    dim: "values", w: [0, 1, 2]
+    dim: "lifestyle", w: [0, 1, 2]
   },
   {
     section: "Direction",
@@ -445,7 +424,7 @@ const QUESTIONS_DATING = [
     dim: "worldview", w: [0, 1, 2, 3]
   },
   {
-    section: "Direction",
+    section: "Finances",
     q: "When it comes to money, you tend to...",
     opts: [
       "Spend freely. Life is now, I'd rather have the experience",
@@ -453,7 +432,7 @@ const QUESTIONS_DATING = [
       "Spend on what matters, save the rest. I think about it",
       "Save by default. Security matters more to me than spending"
     ],
-    dim: "drive", w: [0, 1, 2, 3]
+    dim: "finances", w: [0, 1, 2, 3]
   },
   {
     section: "Depth",
@@ -466,17 +445,7 @@ const QUESTIONS_DATING = [
     dim: "depth", w: [0, 1, 2]
   },
   {
-    section: "Authenticity",
-    q: "When a relationship goes through a rough patch, you...",
-    opts: [
-      "Want to understand it. I'll sit with it, talk it through, figure out what happened",
-      "Process it briefly then move forward",
-      "Move on. Dwelling doesn't help me"
-    ],
-    dim: "auth", w: [0, 1, 2]
-  },
-  {
-    section: "Values",
+    section: "Space & tidiness",
     q: "When it comes to shared space...",
     opts: [
       "I need things clean and organised. Clutter affects my mood",

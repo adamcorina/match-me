@@ -1,12 +1,12 @@
 const DIM_META = {
   // Gottman: bids for connection, directness vs. processing time as a predictor of unspoken accumulation
-  comm:           { label: "Communication",    type: "sim",   lo: "Direct",           hi: "Async"           },
+  comm:           { label: "Communication",    type: "sim",   lo: "Direct",           hi: "Async",           max: 2 },
   // Gottman: pursue-withdraw pattern; EFT (Johnson): negative cycle management; too-similar avoiders = festering
   conflict:       { label: "Conflict style",   type: "sim",   lo: "Head-on",          hi: "Avoidant"        },
   // Big Five extraversion; sim type – two introverts or two extroverts are genuinely compatible
   energy:         { label: "Social energy",    type: "sim",   lo: "Social",           hi: "Solitary"        },
   // Life-goals alignment research; Schwartz value theory – foundational beliefs predict friction under pressure
-  values:         { label: "Values",           type: "sim",   lo: "Reliable",         hi: "Independent"     },
+  values:         { label: "Values",           type: "exact", cats: ["Reliability", "Respect", "Growth", "Ease"] },
   // Contact frequency as attachment expression; links to anxious vs. avoidant baseline needs
   rhythm:         { label: "Rhythm",           type: "sim",   lo: "Frequent contact", hi: "Organic"         },
   // Big Five agreeableness; EFT emotional attunement
@@ -16,7 +16,7 @@ const DIM_META = {
   // Sternberg: intimacy vertex (closeness, bondedness); appetite for meaningful vs. surface conversation
   depth:          { label: "Depth",            type: "sim",   lo: "Conceptual",       hi: "Practical"       },
   // Shared comedic register as social bonding signal; mismatched humour slows rapport under guardedness
-  humor:          { label: "Humour",           type: "sim",   lo: "Absurdist",        hi: "Playful"         },
+  humor:          { label: "Humour",           type: "sim",   lo: "Absurdist",        hi: "Playful",         max: 2 },
   // Schnarch: differentiation – naming limits without fusion or distance; Tatkin: secure functioning
   boundaries:     { label: "Boundaries",       type: "sim",   lo: "Direct",           hi: "Absorbs quietly" },
   // Bowlby / Hazan & Shaver / Johnson: secure, anxious, avoidant patterns; zone catches both extremes
@@ -24,7 +24,9 @@ const DIM_META = {
   // Sternberg: intimacy vertex; Schnarch: self-validated vs. other-validated closeness needs
   intimacy:       { label: "Intimacy",         type: "sim",   lo: "Vulnerable",       hi: "Quiet presence"  },
   // Life-stage alignment research: children, geography, lifestyle – misalignment is a slow-burn incompatibility
-  direction:      { label: "Direction",        type: "sim",   lo: "Settled",          hi: "Open future"     },
+  direction:           { label: "Direction",        type: "sim",   lo: "Settled",          hi: "Open future"     },
+  // Children: one of the highest-stakes compatibility signals; hard incompatibility should outweigh averages
+  direction_children:  { label: "Children",         type: "sim",   lo: "Definitely yes",   hi: "Definitely no"   },
   // Chapman: 5 Love Languages – care given in the wrong language doesn't land even when genuine
   lovelang:       { label: "Love language",    type: "overlap", display: "category", cats: ["Acts of service", "Gifts", "Touch", "Words", "Quality time"] },
   // Gottman: repair cycle timing – too-similar avoiders leave things unresolved; too-different = pursuer/stonewaller
@@ -38,13 +40,14 @@ const DIM_META = {
   // Gottman: fondness & admiration / positive sentiment override – predicts whether repair is possible under conflict
   admire:         { label: "Regard (benefit of the doubt)", type: "sim", lo: "Generous", hi: "Critical"    },
   // Ambition research (Huston et al.): career centrality + resource attitudes predict long-term friction under life transitions
-  drive:          { label: "Ambition & money", type: "sim",   lo: "Achievement-driven", hi: "Lifestyle-led" },
+  drive:          { label: "Ambition",          type: "sim",   lo: "Achievement-driven", hi: "Lifestyle-led" },
+  lifestyle:      { label: "Lifestyle",         type: "sim",   lo: "Output-driven",      hi: "Rest-driven"   },
   // Relationship satisfaction research: domestic compatibility (tidiness, space, privacy) is a persistent low-level stressor when mismatched
   space:          { label: "Space & tidiness", type: "sim",   lo: "Ordered",          hi: "Relaxed"         },
   // Schwartz value theory: universalism/tradition axis; religious orientation predicts friction on rituals, meaning-making, and major life decisions
   worldview:      { label: "Worldview",        type: "sim",   lo: "Faith-led",        hi: "Secular"         },
   // Financial compatibility research: money pooling, decision autonomy, and spending asymmetry are persistent friction sources in cohabiting couples
-  finances:       { label: "Finances",         type: "sim",   lo: "Shared",           hi: "Independent"     },
+  finances:       { label: "Finances & spending", type: "sim", lo: "Shared & free",    hi: "Separate & careful" },
 };
 
 // ─── Per-dimension insight copy ────────────────────────────────────────────────
@@ -100,16 +103,12 @@ const DIM_INSIGHTS = {
   },
 
   values(a, b) {
-    const ba = bucket(a), bb = bucket(b);
-    if (ba === bb) {
-      if (ba === "low")  return { type: "strength", text: "You share a similar foundation: reliability, routine, and showing up for people. The relationship is likely to feel grounded and consistent." };
-      if (ba === "mid")  return { type: "strength", text: "Similar values around autonomy and experience. You both want room to grow without sacrificing the connection. A generative combination." };
-      if (ba === "high") return { type: "strength", text: "You both prioritise ease and low-pressure connection. The relationship is unlikely to feel demanding or suffocating." };
+    const cats = ["reliability", "respect", "growth", "ease"];
+    if (a === b) {
+      return { type: "strength", text: `You both put ${cats[a]} at the centre of a close relationship. That shared foundation tends to show up in how you treat each other without having to negotiate it.` };
     }
-    if ((ba === "low" && bb === "high") || (ba === "high" && bb === "low")) {
-      return { type: "diff", text: "Your values pull in different directions: one toward reliability and commitment, the other toward ease and independence. Not incompatible, but worth naming before it becomes a quiet source of friction." };
-    }
-    return { type: "diff", text: "Slight value differences. Probably compatible in practice, but worth knowing where each of you places their priorities when things get hard." };
+    const na = cats[a], nb = cats[b];
+    return { type: "diff", text: `One of you most values ${na}; the other, ${nb}. Neither is wrong, but they're different enough that you may sometimes feel like you're measuring the relationship by different things.` };
   },
 
   rhythm(a, b) {
@@ -235,6 +234,25 @@ const DIM_INSIGHTS = {
     return { type: "diff", text: "Slightly different long-term orientations. Worth checking in on what you both actually want a few years from now, not to make a plan, but to know you're pointing in roughly the same direction." };
   },
 
+  direction_children(a, b) {
+    // Both want children (0–1 range)
+    if (a <= 1 && b <= 1) {
+      if (a <= 0.5 && b <= 0.5) return { type: "strength", text: "You both want children. No ambiguity there." };
+      return { type: "strength", text: "You're both broadly aligned on wanting children, even if the timeline isn't identical." };
+    }
+    // Both don't want children (2–3 range)
+    if (a >= 2 && b >= 2) {
+      if (a >= 2.5 && b >= 2.5) return { type: "strength", text: "Neither of you wants children. That's a clear and shared foundation." };
+      return { type: "strength", text: "You're both in similar territory on children – uncertain or not wanting them. Enough alignment not to be pulling in opposite directions." };
+    }
+    // Hard mismatch: one definitely yes, one definitely no
+    if ((a <= 0.5 && b >= 2.5) || (a >= 2.5 && b <= 0.5)) {
+      return { type: "diff", text: "One of you wants children; the other doesn't. This is one of the few areas where there's no real compromise position. It's worth a direct conversation, not something to hope resolves itself over time." };
+    }
+    // Soft mismatch
+    return { type: "diff", text: "You're not fully aligned on children. One of you has a clearer answer than the other. Worth naming where each of you actually stands, not just how you feel today." };
+  },
+
   lovelang(a, b) {
     const cats = ["acts of service", "gifts", "touch", "words of affirmation", "quality time"];
     const s1 = lovelangFromIndex(a);
@@ -323,14 +341,27 @@ const DIM_INSIGHTS = {
   drive(a, b) {
     const ba = bucket(a), bb = bucket(b);
     if (ba === bb) {
-      if (ba === "low")  return { type: "strength", text: "You're both ambitious and career-oriented, and you both spend freely. You'll understand each other's drive and won't clash over how money gets used." };
-      if (ba === "mid")  return { type: "strength", text: "Similar orientations toward work and money. Neither of you is likely to feel the other is reckless or checked out." };
-      if (ba === "high") return { type: "strength", text: "You both treat work as a means to an end and lean toward financial caution. A low-friction combination when it comes to lifestyle decisions." };
+      if (ba === "low")  return { type: "strength", text: "You're both ambitious and career-oriented. You'll understand each other's drive and the sacrifices it sometimes asks for." };
+      if (ba === "mid")  return { type: "strength", text: "Similar orientations toward work. Neither of you is likely to feel the other is reckless about their career or completely checked out." };
+      if (ba === "high") return { type: "strength", text: "You both treat work as a means to an end rather than a core identity. Low friction around ambition and the demands it can put on a relationship." };
     }
     if ((ba === "low" && bb === "high") || (ba === "high" && bb === "low")) {
-      return { type: "diff", text: "One of you is driven by achievement and spends freely; the other prioritises ease and financial security. This gap tends to stay invisible until a real decision: a move, a job change, a big purchase, that forces it into the open." };
+      return { type: "diff", text: "One of you is strongly driven by achievement; the other prioritises ease and quality of life. This gap tends to stay invisible until a real decision — a move, a job change, a sacrifice — forces it into the open." };
     }
-    return { type: "diff", text: "Slightly different attitudes toward work and money. Worth knowing where each of you lands before you're making shared decisions." };
+    return { type: "diff", text: "Slightly different orientations toward ambition. Worth knowing where each of you stands before it starts shaping shared decisions." };
+  },
+
+  lifestyle(a, b) {
+    const ba = bucket(a), bb = bucket(b);
+    if (ba === bb) {
+      if (ba === "low")  return { type: "strength", text: "You both feel best when time is being used well – a project, a plan, something to show for the day. Shared time is unlikely to feel aimless or wasted." };
+      if (ba === "mid")  return { type: "strength", text: "Similar balance between doing and being. You'll probably find a natural rhythm together without one person always pushing for more activity or more stillness." };
+      if (ba === "high") return { type: "strength", text: "You both genuinely need to switch off and aren't driven to fill time with output. Shared downtime will feel easy rather than like one person is waiting for the other to slow down." };
+    }
+    if ((ba === "low" && bb === "high") || (ba === "high" && bb === "low")) {
+      return { type: "diff", text: "One of you feels better when time is productive; the other needs to genuinely switch off. This shows up in small ways constantly – how evenings go, what a good weekend looks like, whether doing nothing together feels restorative or restless." };
+    }
+    return { type: "diff", text: "Slightly different orientations toward rest and output. Worth knowing what recharges each of you – and whether shared downtime will actually feel like downtime for both." };
   },
 
   space(a, b) {
@@ -362,14 +393,14 @@ const DIM_INSIGHTS = {
   finances(a, b) {
     const ba = bucket(a), bb = bucket(b);
     if (ba === bb) {
-      if (ba === "low")  return { type: "strength", text: "You both want finances fully or mostly shared. The practical layer of the relationship is likely to feel like a team effort." };
-      if (ba === "mid")  return { type: "strength", text: "Similar attitudes toward money and decisions. Neither of you is likely to feel overruled or financially exposed." };
-      if (ba === "high") return { type: "strength", text: "You both value financial independence and individual decision-making. No one will feel their autonomy is being negotiated away." };
+      if (ba === "low")  return { type: "strength", text: "You both lean toward sharing finances and spending freely. The practical layer of the relationship is likely to feel like a team effort, without a lot of friction around money." };
+      if (ba === "mid")  return { type: "strength", text: "Similar attitudes toward money — neither very merged nor very independent, neither reckless nor overly cautious. Unlikely to clash on the day-to-day of it." };
+      if (ba === "high") return { type: "strength", text: "You both value financial independence and are naturally careful with money. No one will feel their autonomy is being negotiated away or their habits judged." };
     }
     if ((ba === "low" && bb === "high") || (ba === "high" && bb === "low")) {
-      return { type: "diff", text: "One of you wants a shared financial life; the other wants to keep things independent. This gap tends to feel abstract until you're actually living together, then it surfaces in almost every practical decision." };
+      return { type: "diff", text: "One of you wants a shared financial life and spends freely; the other keeps finances independent and saves by default. This gap tends to feel abstract until you're actually living together, then it surfaces in almost every practical decision." };
     }
-    return { type: "diff", text: "Different instincts around money and decision-making. Worth being explicit about what each of you expects before those expectations quietly become assumptions." };
+    return { type: "diff", text: "Different instincts around money. Worth being explicit about what each of you expects before those expectations quietly become assumptions." };
   },
 
 };
@@ -407,7 +438,7 @@ const COMBO_INSIGHTS = [
     if (v1.values === undefined || v2.values === undefined) return null;
     if (v1.conflict === undefined || v2.conflict === undefined) return null;
     const rhythmClose = Math.abs(v1.rhythm - v2.rhythm) <= 0.8;
-    const valuesClose = Math.abs(v1.values - v2.values) <= 0.8;
+    const valuesClose = v1.values === v2.values;
     const conflictLow = v1.conflict <= 1.2 && v2.conflict <= 1.2;
     if (rhythmClose && valuesClose && conflictLow) {
       return { tab: "friendship", type: "strength", text: "Shared rhythm, shared values, and a willingness to address conflict directly. This is a very solid foundation. Most of the things that quietly erode relationships aren't present here." };
@@ -459,9 +490,9 @@ const COMBO_INSIGHTS = [
   function valuesRhythm(v1, v2) {
     if (v1.values === undefined || v2.values === undefined) return null;
     if (v1.rhythm === undefined || v2.rhythm === undefined) return null;
-    const freedomSeeker = v => v.values >= 2.2;
+    const easeOrGrowth = v => v.values === 2 || v.values === 3; // Growth or Ease
     const rhythmFar = Math.abs(v1.rhythm - v2.rhythm) >= 1.5;
-    if ((freedomSeeker(v1) || freedomSeeker(v2)) && rhythmFar) {
+    if ((easeOrGrowth(v1) || easeOrGrowth(v2)) && rhythmFar) {
       return { tab: "friendship", type: "diff", text: "One of you values freedom and spontaneity; you have quite different contact rhythms. The structure-inclined person may read the other's looseness as indifference. Worth being explicit about what reliability looks like to each of you. It's probably not the same thing." };
     }
     return null;
@@ -518,7 +549,7 @@ const COMBO_INSIGHTS = [
   function valuesDirection(v1, v2) {
     if (v1.values === undefined || v2.values === undefined) return null;
     if (v1.direction === undefined || v2.direction === undefined) return null;
-    const valuesClose  = Math.abs(v1.values - v2.values) <= 0.8;
+    const valuesClose  = v1.values === v2.values;
     const directionFar = Math.abs(v1.direction - v2.direction) >= 1.5;
     if (valuesClose && directionFar) {
       return { tab: "relationship", type: "diff", text: "You share a lot of the same values but want quite different things from the future. This is one of the more quietly painful incompatibilities. Everything feels right until you talk about what comes next." };
@@ -611,7 +642,7 @@ const COMBO_INSIGHTS = [
     const driveFar     = Math.abs(v1.drive - v2.drive) >= 1.5;
     const directionFar = Math.abs(v1.direction - v2.direction) >= 1.5;
     if (driveFar && directionFar) {
-      return { tab: "relationship", type: "diff", text: "You want different things from the future and have different orientations toward work and money. These two gaps tend to compound: lifestyle decisions, financial priorities, and long-term plans all pull in different directions at once." };
+      return { tab: "relationship", type: "diff", text: "You want different things from the future and have quite different orientations toward work and ambition. These two gaps tend to compound: how hard you push, what you're willing to sacrifice, and what a good life looks like all pull in different directions at once." };
     }
     return null;
   },
@@ -652,7 +683,7 @@ const COMBO_INSIGHTS = [
     const driveClose     = Math.abs(v1.drive - v2.drive) <= 0.8;
     const directionClose = Math.abs(v1.direction - v2.direction) <= 0.8;
     if (driveClose && directionClose) {
-      return { tab: "relationship", type: "strength", text: "Similar ambitions, similar attitudes toward money, and a shared sense of where you're both heading. The practical layer of a relationship: the decisions, the trade-offs, the plans, is unlikely to be a source of friction between you." };
+      return { tab: "relationship", type: "strength", text: "Similar ambitions and a shared sense of where you're both heading. The practical layer of a relationship — the decisions, the trade-offs, the plans — is unlikely to be a source of friction between you." };
     }
     return null;
   },
@@ -674,10 +705,11 @@ function dimScore(dim, a, b) {
   const meta = DIM_META[dim];
   const type = meta ? meta.type : "sim";
   const diff = Math.abs(a - b);
+  const scale = (meta && meta.max) || 3;
 
   switch (type) {
     case "sim":
-      return 1 - diff / 3;
+      return 1 - diff / scale;
 
     case "overlap": {
       // Jaccard similarity on the two love language selections
@@ -687,6 +719,9 @@ function dimScore(dim, a, b) {
       const union = new Set([...s1, ...s2]).size;
       return union === 0 ? 0 : intersection / union;
     }
+
+    case "exact":
+      return a === b ? 1 : 0;
 
     default:
       return 1 - diff / 3;
@@ -721,8 +756,8 @@ function buildVector(answers, questions) {
   questions.forEach((q, i) => {
     if (answers[i] === undefined) return;
     const d = q.dim;
+    const meta = DIM_META[d];
     if (q.multiSelect) {
-      const meta = DIM_META[d];
       if (meta && meta.type === "overlap") {
         multi[d] = answers[i];
       } else {
@@ -731,6 +766,8 @@ function buildVector(answers, questions) {
         if (!sums[d]) { sums[d] = 0; counts[d] = 0; }
         sel.forEach(idx => { sums[d] += q.w[idx]; counts[d]++; });
       }
+    } else if (meta && meta.type === "exact") {
+      multi[d] = answers[i];
     } else {
       if (!sums[d]) { sums[d] = 0; counts[d] = 0; }
       sums[d] += q.w[answers[i]];
@@ -753,9 +790,11 @@ const DIM_WEIGHTS = {
   values:    1.5,
   stability: 1.5,
   comm:      1.25,
-  direction: 1.25,
+  direction:          1.25,
+  direction_children: 2.0,
   worldview: 1.25,
   admire:    1.25,
+  lifestyle: 1.0,
 };
 
 function calcCompat(v1, v2) {
@@ -785,14 +824,14 @@ function calcCompat(v1, v2) {
   return { overall, dims, label, insights, sharedDims, _v1: v1, _v2: v2 };
 }
 
-const DIM_ORDER = ["admire","attach","auth","boundaries","cconf","comm","conflict","depth","differ","direction","drive","empathy","energy","finances","humor","intimacy","lovelang","passion","rhythm","space","stability","values","worldview"];
+const DIM_ORDER = ["admire","attach","auth","boundaries","cconf","comm","conflict","depth","differ","direction","direction_children","drive","empathy","energy","finances","humor","intimacy","lifestyle","lovelang","passion","rhythm","space","stability","values","worldview"];
 const CODE_CHARS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 function encodeVector(v) {
   return DIM_ORDER.map(d => {
     if (v[d] === undefined) return "_";
     const meta = DIM_META[d];
-    const val = meta && meta.type === "overlap" ? Math.round(v[d]) : Math.round(v[d] * 10);
+    const val = meta && (meta.type === "overlap" || meta.type === "exact") ? Math.round(v[d]) : Math.round(v[d] * 10);
     return CODE_CHARS[val] || "0";
   }).join("");
 }
@@ -805,7 +844,7 @@ function decodeVector(code) {
     const idx = CODE_CHARS.indexOf(code[i]);
     if (idx === -1) return null;
     const meta = DIM_META[DIM_ORDER[i]];
-    v[DIM_ORDER[i]] = meta && meta.type === "overlap" ? idx : idx / 10;
+    v[DIM_ORDER[i]] = meta && (meta.type === "overlap" || meta.type === "exact") ? idx : idx / 10;
   }
   return v;
 }
