@@ -415,6 +415,17 @@ const QUESTIONS_DATING = [
     dim: "worldview", w: [0, 1, 2, 3]
   },
   {
+    section: "Roles",
+    q: "When it comes to how responsibilities split in a relationship...",
+    opts: [
+      "Fully equal. Both working, everything shared, no default roles",
+      "Mostly equal but flexible — we go with what works for each person's situation",
+      "I'd be comfortable with one of us earning more and the other contributing differently",
+      "I'd want a more traditional structure. Clear roles, not everything split down the middle"
+    ],
+    dim: "roles"
+  },
+  {
     section: "Finances",
     q: "When it comes to money, you tend to...",
     opts: [

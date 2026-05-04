@@ -46,6 +46,8 @@ const DIM_META = {
   space:          { label: "Space & tidiness", type: "sim",   lo: "Ordered",          hi: "Relaxed"         },
   // Schwartz value theory: universalism/tradition axis; religious orientation predicts friction on rituals, meaning-making, and major life decisions
   worldview:      { label: "Worldview",        type: "sim",   lo: "Faith-led",        hi: "Secular"         },
+  // Relationship structure research: division of labour and earning expectations are a persistent source of friction when assumed rather than discussed
+  roles:          { label: "Roles",               type: "exact", cats: ["Fully equal", "Flexible equal", "One earns more", "Traditional"] },
   // Financial compatibility research: money pooling, decision autonomy, and spending asymmetry are persistent friction sources in cohabiting couples
   finances:       { label: "Finances & spending", type: "sim", lo: "Shared & free",    hi: "Separate & careful" },
 };
@@ -395,6 +397,22 @@ const DIM_INSIGHTS = {
       return { type: "diff", text: "One of you lives with faith at the centre; the other doesn't. This rarely causes daily friction, but it surfaces in big moments: rituals, children, how you make sense of hard things. Worth talking about before it becomes a surprise." };
     }
     return { type: "diff", text: "Different orientations toward faith and meaning. Not necessarily a problem, but worth knowing how each of you thinks about the bigger questions, especially if children or family traditions are on the table." };
+  },
+
+  roles(a, b) {
+    const cats = ["fully equal", "mostly equal but flexible", "comfortable with one earning more", "more traditional"];
+    if (a === b) {
+      return { type: "strength", text: `You both expect a ${cats[a]} structure. No assumptions to unpack there.` };
+    }
+    // both in the egalitarian range
+    if (a <= 1 && b <= 1) {
+      return { type: "strength", text: "You're both broadly egalitarian, just with slightly different ideas of how rigid that is in practice. Unlikely to cause friction." };
+    }
+    // hard mismatch: fully equal vs traditional
+    if ((a === 0 && b === 3) || (a === 3 && b === 0)) {
+      return { type: "diff", text: "One of you expects everything split equally; the other wants a more traditional structure. This gap tends to stay invisible until you're actually building a life together, then it's everywhere." };
+    }
+    return { type: "diff", text: `You have different expectations around how a relationship is structured — one leaning ${cats[a]}, the other ${cats[b]}. Worth a direct conversation before it becomes an assumption.` };
   },
 
   finances(a, b) {
@@ -801,6 +819,7 @@ const DIM_WEIGHTS = {
   comm:      1.25,
   direction:          1.25,
   direction_children: 2.0,
+  roles:              1.5,
   worldview: 1.25,
   admire:    1.25,
   lifestyle: 1.0,
@@ -833,7 +852,7 @@ function calcCompat(v1, v2) {
   return { overall, dims, label, insights, sharedDims, _v1: v1, _v2: v2 };
 }
 
-const DIM_ORDER = ["admire","attach","auth","boundaries","cconf","comm","conflict","depth","differ","direction","direction_children","drive","empathy","energy","finances","humor","intimacy","lifestyle","lovelang","passion","rhythm","space","stability","values","worldview"];
+const DIM_ORDER = ["admire","attach","auth","boundaries","cconf","comm","conflict","depth","differ","direction","direction_children","drive","empathy","energy","finances","humor","intimacy","lifestyle","lovelang","passion","rhythm","roles","space","stability","values","worldview"];
 const CODE_CHARS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 function encodeVector(v) {
