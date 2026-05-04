@@ -2,40 +2,40 @@ const DIM_META = {
   // Gottman: bids for connection, directness vs. processing time as a predictor of unspoken accumulation
   comm:           { label: "Communication",    type: "sim",   lo: "Direct",           hi: "Async"           },
   // Gottman: pursue-withdraw pattern; EFT (Johnson): negative cycle management; too-similar avoiders = festering
-  conflict:       { label: "Conflict style",   type: "zone",  lo: "Head-on",          hi: "Avoidant"        },
-  // Big Five extraversion; sim type — two introverts or two extroverts are genuinely compatible
+  conflict:       { label: "Conflict style",   type: "sim",   lo: "Head-on",          hi: "Avoidant"        },
+  // Big Five extraversion; sim type – two introverts or two extroverts are genuinely compatible
   energy:         { label: "Social energy",    type: "sim",   lo: "Social",           hi: "Solitary"        },
-  // Life-goals alignment research; Schwartz value theory — foundational beliefs predict friction under pressure
+  // Life-goals alignment research; Schwartz value theory – foundational beliefs predict friction under pressure
   values:         { label: "Values",           type: "sim",   lo: "Reliable",         hi: "Independent"     },
   // Contact frequency as attachment expression; links to anxious vs. avoidant baseline needs
   rhythm:         { label: "Rhythm",           type: "sim",   lo: "Frequent contact", hi: "Organic"         },
-  // Big Five agreeableness; EFT emotional attunement; asym type: ceiling matters more than symmetry
+  // Big Five agreeableness; EFT emotional attunement
   empathy:        { label: "Support style",     type: "sim",   lo: "Emotional",        hi: "Practical"       },
-  // Schnarch: self-validated intimacy — willingness to be fully seen; zone because both extremes carry risk
-  auth:           { label: "Authenticity",     type: "zone",  lo: "Open",             hi: "Guarded"         },
+  // Schnarch: self-validated intimacy – willingness to be fully seen; zone because both extremes carry risk
+  auth:           { label: "Authenticity",     type: "sim",   lo: "Open",             hi: "Guarded"         },
   // Sternberg: intimacy vertex (closeness, bondedness); appetite for meaningful vs. surface conversation
   depth:          { label: "Depth",            type: "sim",   lo: "Conceptual",       hi: "Practical"       },
   // Shared comedic register as social bonding signal; mismatched humour slows rapport under guardedness
   humor:          { label: "Humour",           type: "sim",   lo: "Absurdist",        hi: "Playful"         },
-  // Schnarch: differentiation — naming limits without fusion or distance; Tatkin: secure functioning
-  boundaries:     { label: "Boundaries",       type: "zone",  lo: "Direct",           hi: "Absorbs quietly" },
+  // Schnarch: differentiation – naming limits without fusion or distance; Tatkin: secure functioning
+  boundaries:     { label: "Boundaries",       type: "sim",   lo: "Direct",           hi: "Absorbs quietly" },
   // Bowlby / Hazan & Shaver / Johnson: secure, anxious, avoidant patterns; zone catches both extremes
-  attach:         { label: "Attachment",       type: "zone",  display: "category", cats: ["Secure", "Anxious", "Avoidant", "Disorganised"] },
+  attach:         { label: "Attachment",       type: "sim",   display: "category", cats: ["Secure", "Anxious", "Avoidant", "Disorganised"] },
   // Sternberg: intimacy vertex; Schnarch: self-validated vs. other-validated closeness needs
   intimacy:       { label: "Intimacy",         type: "sim",   lo: "Vulnerable",       hi: "Quiet presence"  },
-  // Life-stage alignment research: children, geography, lifestyle — misalignment is a slow-burn incompatibility
+  // Life-stage alignment research: children, geography, lifestyle – misalignment is a slow-burn incompatibility
   direction:      { label: "Direction",        type: "sim",   lo: "Settled",          hi: "Open future"     },
-  // Chapman: 5 Love Languages — care given in the wrong language doesn't land even when genuine
+  // Chapman: 5 Love Languages – care given in the wrong language doesn't land even when genuine
   lovelang:       { label: "Love language",    type: "overlap", display: "category", cats: ["Acts of service", "Gifts", "Touch", "Words", "Quality time"] },
-  // Gottman: repair cycle timing — too-similar avoiders leave things unresolved; too-different = pursuer/stonewaller
+  // Gottman: repair cycle timing – too-similar avoiders leave things unresolved; too-different = pursuer/stonewaller
   cconf:          { label: "Couple conflict",  type: "sim",   lo: "Resolve same day", hi: "Let it go"       },
   // Sternberg: passion vertex; Perel: erotic vitality as structurally independent of intimacy
   passion:        { label: "Passion",          type: "sim",   lo: "Passion-led",      hi: "Connection-led"  },
-  // Big Five neuroticism — strongest single personality predictor of relationship dissatisfaction (meta-analyses)
-  stability:      { label: "Emotional tone",   type: "zone",  lo: "Steady",           hi: "Reactive"        },
-  // Schnarch: differentiation — maintaining identity under relational pressure without merging or distancing
+  // Big Five neuroticism – strongest single personality predictor of relationship dissatisfaction (meta-analyses)
+  stability:      { label: "Emotional tone",   type: "sim",   lo: "Steady",           hi: "Reactive"        },
+  // Schnarch: differentiation – maintaining identity under relational pressure without merging or distancing
   differ:         { label: "Independence",     type: "sim",   lo: "Merged",           hi: "Independent"     },
-  // Gottman: fondness & admiration / positive sentiment override — predicts whether repair is possible under conflict
+  // Gottman: fondness & admiration / positive sentiment override – predicts whether repair is possible under conflict
   admire:         { label: "Regard (benefit of the doubt)", type: "sim", lo: "Generous", hi: "Critical"    },
   // Ambition research (Huston et al.): career centrality + resource attitudes predict long-term friction under life transitions
   drive:          { label: "Ambition & money", type: "sim",   lo: "Achievement-driven", hi: "Lifestyle-led" },
@@ -72,21 +72,18 @@ const DIM_INSIGHTS = {
     return { type: "diff", text: "Your communication styles sit at different points on the spectrum. Worth checking in: do you both feel equally heard, or does one person end up doing more of the emotional labour?" };
   },
 
-  conflict(a, b, score) {
+  conflict(a, b) {
     const ba = bucket(a), bb = bucket(b);
     if (ba === bb) {
-      if (ba === "low")  return score >= 0.5
-        ? { type: "strength", text: "You both address friction head-on and quickly. Disagreements are unlikely to fester. The danger is occasionally pushing for resolution before the other is ready." }
-        : { type: "diff",     text: "You're both very direct in conflict, which can mean conversations escalate quickly. When neither person steps back, arguments can become about winning rather than resolving." };
-      if (ba === "mid")  return score >= 0.5
-        ? { type: "strength", text: "You both prefer to let emotions settle before engaging. Conflict between you is likely to be measured and fair." }
-        : { type: "diff",     text: "You both take time before engaging with conflict, which can mean important things stay unaddressed for too long. The measured pace can become a way of never quite getting there." };
-      if (ba === "high") return { type: "diff", text: "Both of you tend to withdraw or avoid when things get hard. Disagreements may go unresolved for longer than is healthy. Someone eventually has to open the door." };
+      if (ba === "low")  return { type: "strength", text: "You both address friction head-on and quickly. Disagreements are unlikely to fester between you." };
+      if (ba === "mid")  return { type: "strength", text: "You both prefer to let things settle before engaging. Conflict between you is likely to be measured and calm." };
+      if (ba === "high") return { type: "strength", text: "Neither of you pushes hard to resolve conflict. Things are unlikely to escalate, though important things can stay unaddressed if neither person opens the door." };
     }
     if ((ba === "low" && bb === "high") || (ba === "high" && bb === "low")) {
-      return { type: "diff", text: "One of you moves toward conflict; the other moves away from it. This is one of the most common friction points in close relationships: the pursuer feels ignored, the avoider feels pressured. Naming this dynamic explicitly tends to help more than any single conversation." };
+      return { type: "diff", text: "One of you moves toward conflict; the other moves away from it. The pursuer feels ignored, the avoider feels pressured – and each reaction makes the other worse. This is one of the most common friction patterns in close relationships.",
+               growth: "Someone who addresses things directly – without it turning into an attack – can show that conflict doesn't have to be dangerous. For someone whose instinct is to avoid it, that's a different kind of evidence than knowing it intellectually." };
     }
-    return { type: "diff", text: "You handle conflict at different speeds and thresholds. The risk is a mismatch in timing: one person ready to talk while the other isn't there yet." };
+    return { type: "diff", text: "You handle conflict at different speeds. One person is ready to talk before the other is, which can make the conversation itself become the problem." };
   },
 
   energy(a, b) {
@@ -97,9 +94,9 @@ const DIM_INSIGHTS = {
       if (ba === "high") return { type: "strength", text: "You both value solitude and selective socialising. There's little risk of one person dragging the other to events they hate." };
     }
     if ((ba === "low" && bb === "high") || (ba === "high" && bb === "low")) {
-      return { type: "diff", text: "One of you refuels around people; the other refuels alone. There's real room for growth here — the introvert gets a bridge to the world, the extrovert gets an anchor. It just needs genuine negotiation around social calendars rather than assumptions." };
+      return { type: "diff", text: "One of you refuels around people; the other refuels alone. It just needs genuine negotiation around social calendars rather than assumptions." };
     }
-    return { type: "diff", text: "Slightly different social rhythms. There's room to grow into each other's world here — worth agreeing on what shared social time actually looks like for each of you." };
+    return { type: "diff", text: "Slightly different social rhythms. There's room to grow into each other's world here – worth agreeing on what shared social time actually looks like for each of you." };
   },
 
   values(a, b) {
@@ -136,26 +133,24 @@ const DIM_INSIGHTS = {
       if (ba === "high") return { type: "strength", text: "You're both practically oriented when someone's struggling. You'll understand each other's instinct to fix rather than just sit with things." };
     }
     if ((ba === "low" && bb === "high") || (ba === "high" && bb === "low")) {
-      return { type: "diff", text: "One of you leads with emotional presence; the other reaches for practical solutions. These are genuinely different instincts and they frequently clash in the moments that matter most. The emotional person feels unseen; the practical one feels like nothing they do is right. It takes real effort to bridge this, but people who manage it tend to come out more complete on both sides." };
+      return { type: "diff", text: "One of you leads with emotional presence; the other reaches for practical solutions. These are genuinely different instincts and they frequently clash in the moments that matter most. The emotional person feels unseen; the practical one feels like nothing they do is right.",
+               growth: "When someone consistently meets you with presence rather than solutions, it can gradually shift what you reach for when the other person is struggling. Not immediately – but the reference point changes." };
     }
     return { type: "diff", text: "Slightly different support styles. Just don't assume your way of showing care reads the same way to them." };
   },
 
-  auth(a, b, score) {
+  auth(a, b) {
     const ba = bucket(a), bb = bucket(b);
     if (ba === bb) {
-      if (ba === "low")  return score >= 0.5
-        ? { type: "strength", text: "You're both open and self-aware: quick to be yourselves and willing to examine what goes wrong. The relationship is likely to feel honest from early on." }
-        : { type: "diff",     text: "You're both very open very quickly. That can feel electric early on, but without some gradual trust-building, the intimacy can outpace the foundation." };
-      if (ba === "mid")  return score >= 0.5
-        ? { type: "strength", text: "You both open up gradually and reflect on things when they matter. You'll give each other the space to do that without pressure." }
-        : { type: "diff",     text: "You're both somewhat guarded and moderately reflective. The connection may take a while to feel real, not because anything is wrong, but because neither of you pushes it forward." };
-      if (ba === "high") return { type: "diff", text: "You're both guarded and tend not to analyse things much. The connection may stay comfortable on the surface, but important things can go unsaid for a long time." };
+      if (ba === "low")  return { type: "strength", text: "You're both naturally open and willing to be yourselves early. The connection is likely to feel honest and real from the start." };
+      if (ba === "mid")  return { type: "strength", text: "You both open up gradually and at a similar pace. Neither of you will feel pushed or left behind." };
+      if (ba === "high") return { type: "strength", text: "You're both guarded and slow to show yourselves. The connection will take time to go anywhere real, but neither of you will feel pressure to go faster than you're ready for." };
     }
     if ((ba === "low" && bb === "high") || (ba === "high" && bb === "low")) {
-      return { type: "diff", text: "One of you is open and reflective; the other more guarded and less inclined to examine things. The open person may feel they're doing most of the emotional work. Worth naming." };
+      return { type: "diff", text: "One of you is open early; the other takes a long time to lower their guard. The open person risks feeling like they're doing all the emotional work. The guarded one may feel quietly pushed. Neither perception is usually accurate, but both feel real.",
+               growth: "Being around someone who is genuinely open – not as a performance, just as their nature – can make it easier to lower your own guard without feeling exposed. The pace doesn't have to match for it to happen." };
     }
-    return { type: "diff", text: "Different openness timelines. Not a problem, just means the person who opens faster may need to consciously slow down and let trust build at the other's pace." };
+    return { type: "diff", text: "You open up at different speeds. The person who goes first will need to sit with some uncertainty about whether it's reciprocal – and be patient while it is." };
   },
 
   depth(a, b) {
@@ -184,38 +179,34 @@ const DIM_INSIGHTS = {
     return { type: "diff", text: "Slightly different humour styles, probably close enough to find a shared register quickly. The main thing to watch is teasing: what reads as playful in one style can land as pointed in another." };
   },
 
-  boundaries(a, b, score) {
+  boundaries(a, b) {
     const ba = bucket(a), bb = bucket(b);
     if (ba === bb) {
-      if (ba === "low")  return score >= 0.5
-        ? { type: "strength", text: "You both communicate limits clearly and early. There's little chance of a slow build of resentment between you." }
-        : { type: "diff",     text: "You're both very direct about limits, which sounds good, but when both people draw hard lines early, there's less room to feel your way into the relationship. The directness can land as rigidity." };
-      if (ba === "mid")  return score >= 0.5
-        ? { type: "strength", text: "You both signal needs without drama and expect the same in return. A stable, low-friction dynamic." }
-        : { type: "diff",     text: "You both tend to hint rather than name things directly. When neither person says what they actually need, it can feel harmonious on the surface while things quietly accumulate." };
-      if (ba === "high") return { type: "diff", text: "Neither of you finds it easy to name limits directly. Things may stay comfortable on the surface while tension accumulates underneath, until one person eventually boils over." };
+      if (ba === "low")  return { type: "strength", text: "You both name limits directly and early. There's little chance of slow-building resentment between you." };
+      if (ba === "mid")  return { type: "strength", text: "You both signal needs without drama and expect the other to do the same. A stable, low-friction dynamic." };
+      if (ba === "high") return { type: "strength", text: "Neither of you makes a point of naming limits out loud. Things feel smooth until they aren't – and when they aren't, neither of you will find it easy to say so." };
     }
     if ((ba === "low" && bb === "high") || (ba === "high" && bb === "low")) {
-      return { type: "diff", text: "One person draws limits clearly; the other absorbs quietly and may eventually explode. The explicit communicator can sometimes read the other as passive-aggressive; the quieter one may feel steamrolled. Naming this gap early helps." };
+      return { type: "diff", text: "One of you names limits clearly and directly; the other absorbs quietly and says nothing. The direct one can read the quiet one as passive-aggressive. The quiet one can feel steamrolled. Both are usually just doing what feels natural to them.",
+               growth: "Watching someone name their limits without drama – not as a confrontation, just as information – can make it easier to do the same. For someone who tends to absorb, having that modelled close up is different from just knowing it's possible." };
     }
-    return { type: "diff", text: "Different boundary styles. Worth agreeing on how you each prefer to signal when something isn't working, before it becomes a pattern." };
+    return { type: "diff", text: "You communicate limits at different thresholds. The one who absorbs more will need to speak up sooner than feels natural; the more direct one may need to check in rather than wait to be told." };
   },
 
-  attach(a, b, score) {
+  attach(a, b) {
     const ba = bucket(a), bb = bucket(b);
     if (ba === bb) {
-      if (ba === "low")  return score >= 0.5
-        ? { type: "strength", text: "You both express needs directly and form bonds gradually but securely. The attachment dynamic between you is likely to feel stable." }
-        : { type: "diff",     text: "You're both securely attached, which is a strong foundation, but when two secure people are also very similar in how they connect, there can be less push to grow or stretch. The relationship may feel comfortable but not particularly alive." };
-      if (ba === "mid")  return score >= 0.5
-        ? { type: "strength", text: "You both open up carefully and need some time before you're truly attached. You'll understand each other's pace." }
-        : { type: "diff",     text: "You both carry some anxiety or guardedness around attachment. That mutual understanding helps, but two people who both need reassurance can end up waiting for the other to go first." };
-      if (ba === "high") return { type: "diff", text: "You both tend to keep a wall up and take a long time to attach. The relationship may feel a little emotionally cautious for a while. Someone will eventually have to go first." };
+      if (ba === "low")  return { type: "strength", text: "You both feel secure in relationships and don't tend to need a lot of reassurance or space. The attachment dynamic between you is likely to feel stable and easy." };
+      if (ba === "mid")  return { type: "strength", text: "You both bring some anxiety into relationships. You'll understand each other's need for reassurance – though two people waiting for the other to go first can slow things down." };
+      if (ba === "high") return { type: "strength", text: "You both tend to keep distance in relationships and are slow to fully attach. Neither of you will crowd the other. The risk is that the connection never quite gets close enough to feel real." };
     }
     if ((ba === "low" && bb === "high") || (ba === "high" && bb === "low")) {
-      return { type: "diff", text: "Different attachment paces: one person bonds quickly and openly, the other slowly and guardedly. The faster-attaching person risks reading the other's caution as rejection. This is one of the more important dynamics to talk about explicitly early on." };
+      return { type: "diff", text: "Your attachment styles are quite far apart. One of you feels secure and doesn't need much reassurance; the other keeps significant distance. They want different things from the relationship by default." };
     }
-    return { type: "diff", text: "Slightly different attachment styles. The person who attaches more readily should probably be transparent about it, and the other should be clear about what they need to feel safe opening up." };
+    // secure + anxious or anxious + secure
+    const hasGrowth = (ba === "low" && bb === "mid") || (ba === "mid" && bb === "low");
+    return { type: "diff", text: "Your attachment styles differ. The person who needs more reassurance may read the other's distance as coldness; the one who needs more space may feel quietly pressured. Both are just trying to feel safe in the way that makes sense to them.",
+             growth: hasGrowth ? "A secure presence doesn't punish anxiety or chase when there's distance. For someone who carries nervousness in relationships, that kind of consistency can quietly shift what feels normal – not through effort, just through repeated experience." : null };
   },
 
   intimacy(a, b) {
@@ -257,7 +248,7 @@ const DIM_INSIGHTS = {
       const names = shared.map(i => cats[i]).join(" and ");
       return { type: "strength", text: `You share ${names} as a love language. You'll get part of it right without trying. The rest is just worth naming.` };
     }
-    return { type: "diff", text: "You speak different love languages. Care is likely being given — it's just not arriving in the form the other person recognises most. Worth saying it out loud." };
+    return { type: "diff", text: "You speak different love languages. Care is likely being given – it's just not arriving in the form the other person recognises most. Worth saying it out loud." };
   },
 
   cconf(a, b) {
@@ -286,34 +277,34 @@ const DIM_INSIGHTS = {
     return { type: "diff", text: "Slightly different orientations toward passion and physical intensity. Worth knowing what each of you actually needs to feel the relationship is alive. Not assumed, actually said." };
   },
 
-  stability(a, b, score) {
+  stability(a, b) {
     const ba = bucket(a), bb = bucket(b);
     if (ba === bb) {
-      if (ba === "low")  return score >= 0.5
-        ? { type: "strength", text: "You're both emotionally steady by nature. The relationship is unlikely to be destabilised by either person's internal weather. There's a reliable baseline between you." }
-        : { type: "diff",     text: "You're both very steady, which is stable, but when neither person is particularly reactive or expressive, the relationship can feel a little flat. Emotional steadiness can sometimes read as distance." };
-      if (ba === "mid")  return score >= 0.5
-        ? { type: "strength", text: "Similar emotional ranges. Neither of you is unusually reactive, neither unusually flat. You'll read each other's states accurately most of the time." }
-        : { type: "diff",     text: "You're both somewhere in the middle emotionally. That similarity is fine, but it also means neither of you is particularly anchoring the other when things get hard." };
-      if (ba === "high") return { type: "diff", text: "You're both emotionally sensitive and reactive. The connection can feel intensely alive, but when both people are running high at the same time, there's no one anchoring the room. Repair cycles may take longer than they need to." };
+      if (ba === "low")  return { type: "strength", text: "You're both emotionally steady. The relationship is unlikely to be destabilised by either person's internal weather. There's a reliable baseline between you." };
+      if (ba === "mid")  return { type: "strength", text: "Similar emotional ranges. Neither of you is unusually reactive, neither unusually flat. You'll read each other's states accurately most of the time." };
+      if (ba === "high") return { type: "strength", text: "You both feel things intensely and can run high. The connection will feel alive and mutually understood – but when things get hard, there's no one anchoring the room. Two people running hot at the same time can escalate quickly." };
     }
     if ((ba === "low" && bb === "high") || (ba === "high" && bb === "low")) {
-      return { type: "diff", text: "One of you is emotionally steady; the other more reactive and sensitive. This can work well. The stable person grounds the volatile one. But it also creates an invisible asymmetry: the steadier person ends up doing more emotional regulation for both, which accumulates over time even when they don't show it." };
+      return { type: "diff", text: "One of you is emotionally steady; the other more reactive and sensitive. The steadier person often becomes the default anchor, which works until it quietly becomes a weight. The reactive person may feel managed; the steady one may feel like they're always regulating for two. Both need to name it before it accumulates.",
+               growth: "Being regularly around someone who doesn't escalate or get pulled into intensity can expand what calm feels like from the inside. Not through being told to calm down – just through having that as a reference point close enough to feel." };
     }
-    return { type: "diff", text: "Slightly different emotional baselines. The more reactive person may sometimes feel the other is hard to read; the steadier one may occasionally feel managed. Neither perception is usually accurate. Worth naming when it surfaces." };
+    return { type: "diff", text: "Slightly different emotional baselines. The more reactive person may read the steadier one as hard to reach; the steadier one may occasionally feel pulled into intensity they didn't ask for. Usually workable, worth knowing." };
   },
 
   differ(a, b) {
     const ba = bucket(a), bb = bucket(b);
     if (ba === bb) {
-      if (ba === "low")  return { type: "strength", text: "You're both comfortable being fully yourself inside a relationship without needing distance to maintain your identity. Closeness doesn't threaten either of you." };
-      if (ba === "mid")  return { type: "strength", text: "You both hold your own sense of self reasonably well within relationships. Close enough to be vulnerable, defined enough not to lose yourselves." };
-      if (ba === "high") return { type: "diff", text: "You both need significant independence to feel like yourselves in a relationship. The connection may stay healthy and non-enmeshed, or it may stay at a comfortable but permanent distance. Someone will need to choose closeness deliberately." };
+      if (ba === "low")  return { type: "strength", text: "You both want real closeness and are comfortable with a shared life. Neither of you is likely to feel smothered or emotionally unavailable to the other." };
+      if (ba === "mid")  return { type: "strength", text: "You both hold your own identity within a relationship without needing a lot of distance to do it. Close enough to be vulnerable, defined enough not to lose yourselves." };
+      if (ba === "high") return { type: "strength", text: "You both need significant independence to feel like yourselves. Neither will crowd the other. The risk is that two highly independent people can drift into something that functions more like a friendship with history than a living relationship." };
     }
     if ((ba === "low" && bb === "high") || (ba === "high" && bb === "low")) {
-      return { type: "diff", text: "One of you is comfortable with deep mutual reliance; the other needs more autonomy to feel like themselves. This isn't incompatible, but the merger-inclined person may experience the independent one as emotionally unavailable, while the independent one may feel quietly suffocated. Naming what each of you actually needs is the only way through this." };
+      return { type: "diff", text: "One of you wants a deeply shared life; the other needs significant independence to feel like themselves. The closer one may feel chronically under-connected; the more independent one may feel quietly suffocated. This gap needs to be named, not just tolerated.",
+               growth: "Someone who maintains a clear sense of themselves inside a relationship can quietly give the other person permission to do the same. That's not distance – it's a different model of what closeness can look like." };
     }
-    return { type: "diff", text: "One of you needs more space within the relationship than the other. That's workable, but it needs to be said out loud. The person who needs more togetherness can read distance as rejection; the one who needs more space can feel quietly suffocated without it." };
+    const hasGrowth = (ba === "low" && bb === "mid") || (ba === "mid" && bb === "low");
+    return { type: "diff", text: "You have different ideas of how much of yourselves to bring into a relationship. The person who wants more togetherness may read the other's distance as disinterest. Worth being explicit about what closeness actually looks like for each of you.",
+             growth: hasGrowth ? "Someone who holds onto their own identity within a relationship – without needing distance to do it – can make it easier for the other person to see that closeness and selfhood aren't in conflict." : null };
   },
 
   admire(a, b) {
@@ -666,26 +657,6 @@ const COMBO_INSIGHTS = [
     return null;
   },
 
-  function growthAreas(v1, v2) {
-    const GROWTH_DIMS = {
-      energy:  "<u>Social energy</u>: one of you gets a bridge to the world, the other an anchor.",
-      depth:   "<u>Depth</u>: the person who goes deep can pull the other further than they'd go alone.",
-      empathy: "<u>Support style</u>: emotional and practical instincts together make a more complete pair.",
-      differ:  "<u>Independence</u>: one person's groundedness can give the other permission to be more themselves.",
-      humor:   "<u>Humour</u>: different comedic registers often produce something more interesting than either alone.",
-    };
-    const areas = Object.entries(GROWTH_DIMS)
-      .filter(([d]) => v1[d] !== undefined && v2[d] !== undefined && Math.abs(v1[d] - v2[d]) >= 1.2)
-      .map(([, desc]) => desc);
-    if (areas.length < 2) return null;
-    const list = areas.slice(0, 3).map(a => `<li>${a}</li>`).join("");
-    return {
-      tab: "friendship",
-      type: "diff",
-      text: `Some of the differences here are worth sitting with rather than resolving. There's real room for growth in:<ul>${list}</ul>`,
-    };
-  },
-
 ];
 
 function scoreLabel(pct) {
@@ -706,21 +677,7 @@ function dimScore(dim, a, b) {
 
   switch (type) {
     case "sim":
-      // Pure similarity — smaller diff = better
       return 1 - diff / 3;
-
-    case "comp":
-      // Complementarity — moderate diff is optimal (sin curve peaks at diff=1.5)
-      return Math.sin((diff / 3) * Math.PI);
-
-    case "zone":
-      // Inverted U — too similar can mean stagnation, too different = friction
-      // Peak at diff ≈ 0.8–1.2
-      return 0.85 * Math.exp(-Math.pow(diff - 1, 2) / 0.9);
-
-    case "asym":
-      // What matters is the maximum (higher empathy helps), penalise large gap
-      return Math.max(0, Math.max(a, b) / 3 - (diff / 3) * 0.4);
 
     case "overlap": {
       // Jaccard similarity on the two love language selections

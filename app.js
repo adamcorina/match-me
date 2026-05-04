@@ -534,8 +534,9 @@ function renderDimCards(dims, sharedDims, v1, v2, containerId) {
     const s = Math.round(dims[d] * 100);
     const color = s >= 65 ? "bar-hi" : s >= 40 ? "bar-mid" : "bar-lo";
     let ins = DIM_INSIGHTS[d] ? DIM_INSIGHTS[d](v1[d], v2[d], dims[d]) : null;
-    if (ins && ins.type === "strength" && dims[d] < 0.5) ins = { type: "diff", text: ins.text };
-    const insHtml = ins ? `<div class="dim-insight ${ins.type}">${ins.text}</div>` : "";
+    if (ins && ins.type === "strength" && dims[d] < 0.5) ins = { type: "diff", text: ins.text, growth: ins.growth };
+    const growthHtml = ins && ins.growth ? `<div class="dim-insight growth"><span class="growth-label">Growth</span>${ins.growth}</div>` : "";
+    const insHtml = ins ? `<div class="dim-insight ${ins.type}"><span class="dynamic-label">Dynamic</span>${ins.text}</div>${growthHtml}` : "";
     el.innerHTML += `
       <div class="dim-card">
         <div class="dim-card-header">

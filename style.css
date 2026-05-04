@@ -781,6 +781,22 @@ html, body {
   border-top: 1px solid var(--border);
 }
 
+.dim-insight.growth {
+  color: var(--text2);
+  border-top: none;
+  padding-top: 4px;
+}
+
+.growth-label, .dynamic-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-right: 6px;
+}
+
+.growth-label { color: var(--accent); }
+.dynamic-label { color: var(--text3); }
+
 .combo-header {
   font-size: 11px;
   text-transform: uppercase;
