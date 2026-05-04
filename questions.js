@@ -364,17 +364,6 @@ const QUESTIONS_DATING = [
   },
   {
     section: "Emotional tone",
-    q: "After a difficult conversation, you usually feel...",
-    opts: [
-      "Relieved. It needed to happen and now it's done",
-      "Drained but okay. I need a bit to recover",
-      "Unsettled. I replay it, wonder if I said the right things, worry how they took it",
-      "Like I'd rather have avoided the whole thing. Even when it goes fine, I find these conversations costly"
-    ],
-    dim: "stability", w: [0, 1, 2, 3]
-  },
-  {
-    section: "Emotional tone",
     q: "When something upsets you, how long does it tend to stay with you?",
     opts: [
       "I bounce back quickly, it passes",
@@ -500,14 +489,4 @@ const QUESTIONS_DATING = [
     ],
     dim: "finances", w: [0, 1, 2]
   },
-  {
-    section: "Finances",
-    q: "When you and a partner have different comfort levels around spending (takeout vs cooking, holidays, nights out)...",
-    opts: [
-      "I adjust to what works for both of us. The gap is mine to bridge internally",
-      "We find a middle ground each time. Neither of us always gets their preference",
-      "I go with what I'm comfortable with. I'll cover any difference if needed"
-    ],
-    dim: "finances", w: [0, 1, 2]
-  }
 ];
