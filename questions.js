@@ -14,25 +14,25 @@ const QUESTIONS_CORE = [
     dim: "comm", w: [0, 1, 2, 1.5]
   },
 
-  // conflict: approach-to-conflict. 0=confronts immediately, 3=withdraws/distances.
-  // Axis: head-on ←→ avoidant
+  // conflict: approach-to-conflict when hurt, early/untested relationship. 0=confronts immediately, 3=withdraws.
+  // Axis: head-on ←→ avoidant. Anchored to before you know the relationship can handle it.
   {
     section: "Conflict",
-    q: "Someone close says something that hurts you. Your first reaction...",
+    q: "A friend you haven't had any conflict with yet says something that hurts you. Your first reaction...",
     opts: [
-      "I say how I feel immediately. I can't sit on it",
-      "I wait until I've calmed down, then bring it up",
-      "I let it pass. I'd rather move on than have a discussion that might make things worse",
-      "I create some distance. It's hard to stay open with someone right after they've hurt me"
+      "I say how I feel. I'd rather know early if we can handle this",
+      "I wait until I've calmed down, then bring it up carefully",
+      "I let it pass. I don't know yet if it's worth the risk",
+      "I create some distance. It's hard to stay open when I'm not sure where I stand"
     ],
     dim: "conflict", w: [0, 1, 2, 3]
   },
 
-  // conflict: conflict expression style. 0=direct/unfiltered, 3=silent/peace-keeping.
-  // Axis: direct confrontation ←→ conflict suppression
+  // conflict: conflict expression style in an established relationship. 0=direct, 3=keeps the peace.
+  // Axis: direct confrontation ←→ conflict suppression. Anchored to someone you know well.
   {
     section: "Conflict",
-    q: "You're in a disagreement with someone. What does it look like from the outside?",
+    q: "You're in a disagreement with someone you know well. What does it look like from the outside?",
     opts: [
       "Direct and unfiltered. I say what I think, I don't soften it",
       "Firm but measured. I make my point clearly without making it personal",
@@ -477,6 +477,20 @@ const QUESTIONS_DATING = [
       "When someone gives you their full, unhurried attention. No phone, nowhere else to be"
     ],
     dim: "lovelang", multiSelect: 2
+  },
+
+  // conflict: approach when fully secure — with someone you trust won't leave. 0=direct/erupts, 3=still avoidant.
+  // Axis: head-on ←→ avoidant. Captures the mode that only unlocks under real security.
+  {
+    section: "Couple conflict",
+    q: "Think of someone you fully trust — a partner or person you know won't go anywhere over a disagreement. When they do something that bothers you, you...",
+    opts: [
+      "Say it immediately. With them I don't hold back",
+      "Bring it up when the moment feels right, but I don't sit on it long",
+      "Take my time. Even with people I trust, I think before I say something",
+      "Often let it go. Even when I feel safe, confrontation doesn't come naturally"
+    ],
+    dim: "conflict", w: [0, 1, 2, 3]
   },
 
   // cconf: couple conflict resolution pace. 0=resolves same day, 3=lets it go/doesn't fully resolve.
