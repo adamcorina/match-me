@@ -740,6 +740,33 @@ const COMBO_INSIGHTS = [
     return null;
   },
 
+  // Both avoid in friendship context AND let things go in relationship context:
+  // silent accumulation pattern — nothing escalates but nothing resolves either.
+  function conflictCconfBothAvoid(v1, v2) {
+    if (v1.conflict === undefined || v2.conflict === undefined) return null;
+    if (v1.cconf === undefined || v2.cconf === undefined) return null;
+    const avoidant = v => v.conflict >= 2;
+    const letsItGo = v => v.cconf >= 2;
+    if (avoidant(v1) && avoidant(v2) && letsItGo(v1) && letsItGo(v2)) {
+      return { tab: "relationship", type: "diff", text: "You both avoid conflict when it first surfaces and neither of you tends to push to fully resolve it. Things stay smooth. Nothing escalates. But nothing gets closed either. Over time, what accumulates isn't anger — it's distance. The things that mattered and went unsaid." };
+    }
+    return null;
+  },
+
+  // One confronts, the other lets it go — the meta-argument pattern.
+  function conflictCconfPursuerDropper(v1, v2) {
+    if (v1.conflict === undefined || v2.conflict === undefined) return null;
+    if (v1.cconf === undefined || v2.cconf === undefined) return null;
+    const confronts = v => v.conflict <= 1;
+    const letsItGo  = v => v.cconf >= 2;
+    const v1Pattern = confronts(v1) && letsItGo(v2);
+    const v2Pattern = confronts(v2) && letsItGo(v1);
+    if (v1Pattern || v2Pattern) {
+      return { tab: "relationship", type: "diff", text: "One of you addresses friction when it happens; the other tends to let things go rather than fully resolve them. The person who wants to address it ends up feeling like they're always the one keeping score. The person who lets it go may feel pulled into conversations they thought were already over. The argument becomes about whether to have the argument — which is its own argument." };
+    }
+    return null;
+  },
+
 ];
 
 function scoreLabel(pct) {

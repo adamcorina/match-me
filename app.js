@@ -9,12 +9,26 @@ const state = {
   myCode: null,
 };
 
+// ─── Storage versioning ───────────────────────────────────────────────────────
+const STORAGE_VERSION = "3";
+
+function migrateStorage() {
+  if (localStorage.getItem("matchme_version") !== STORAGE_VERSION) {
+    localStorage.removeItem("matchme_code");
+    localStorage.removeItem("matchme_vector");
+    localStorage.removeItem("matchme_answers");
+    localStorage.removeItem("matchme_allQ_dating");
+    localStorage.setItem("matchme_version", STORAGE_VERSION);
+  }
+}
+
 // Persist to localStorage
 function saveState() {
+  localStorage.setItem("matchme_answers", JSON.stringify(state.answers));
+  localStorage.setItem("matchme_allQ_dating", JSON.stringify(state.allQ.length > QUESTIONS_CORE.length));
   if (state.myCode) {
     localStorage.setItem("matchme_code", state.myCode);
     localStorage.setItem("matchme_vector", JSON.stringify(state.myVector));
-    localStorage.setItem("matchme_answers", JSON.stringify(state.answers));
   }
 }
 
@@ -26,9 +40,18 @@ function loadState() {
     state.myVector = JSON.parse(vec);
     const savedAnswers = localStorage.getItem("matchme_answers");
     if (savedAnswers) state.answers = JSON.parse(savedAnswers);
+    const hadDating = localStorage.getItem("matchme_allQ_dating");
+    if (hadDating === "true") state.allQ = [...QUESTIONS_CORE, ...QUESTIONS_DATING];
     return true;
   }
   return false;
+}
+
+function loadSavedAnswers() {
+  const savedAnswers = localStorage.getItem("matchme_answers");
+  const hadDating = localStorage.getItem("matchme_allQ_dating");
+  if (hadDating === "true") state.allQ = [...QUESTIONS_CORE, ...QUESTIONS_DATING];
+  return savedAnswers ? JSON.parse(savedAnswers) : [];
 }
 
 // ─── Navigation helpers ───────────────────────────────────────────────────────
@@ -63,17 +86,22 @@ function checkFromLanding() {
 // ─── Quiz ─────────────────────────────────────────────────────────────────────
 function startQuiz() {
   state.allQ = [...QUESTIONS_CORE];
-  state.answers = [];
-  state.current = 0;
   state.gatePassed = false;
   state.addingRomantic = false;
+  const saved = loadSavedAnswers();
+  state.answers = saved.length ? saved : [];
+  state.current = 0;
   showScreen("screen-quiz");
   renderQuestion();
 }
 
 function startDatingQuiz() {
   state.allQ = [...QUESTIONS_CORE, ...QUESTIONS_DATING];
-  state.answers = new Array(QUESTIONS_CORE.length).fill(undefined);
+  // preserve existing core answers, load saved dating answers if any
+  const saved = loadSavedAnswers();
+  if (state.answers.length < QUESTIONS_CORE.length) {
+    state.answers = saved.length ? saved : new Array(QUESTIONS_CORE.length).fill(undefined);
+  }
   state.current = QUESTIONS_CORE.length;
   state.gatePassed = true;
   state.addingRomantic = true;
@@ -136,12 +164,15 @@ function selectOption(i) {
     });
     document.getElementById("btn-next").disabled = false;
   }
+  saveState();
 }
 
 function goBack() {
   if (state.current > 0) {
     state.current--;
     renderQuestion();
+  } else if (state.myVector) {
+    renderProfile();
   } else {
     showScreen("screen-landing");
   }
@@ -151,10 +182,15 @@ function goNext() {
   const ans = state.answers[state.current];
   if (ans === undefined || (Array.isArray(ans) && ans.length === 0)) return;
 
-  // Show dating gate after core questions
+  // Show dating gate after core questions — skip if already did dating before
   if (state.current === QUESTIONS_CORE.length - 1 && !state.gatePassed) {
-    showScreen("screen-gate");
-    return;
+    if (state.allQ.length > QUESTIONS_CORE.length) {
+      // already includes dating questions (loaded from saved), just continue
+      state.gatePassed = true;
+    } else {
+      showScreen("screen-gate");
+      return;
+    }
   }
 
   if (state.current < state.allQ.length - 1) {
@@ -500,7 +536,7 @@ function fitLines(v) {
     pushWorst(["attach"], "is very anxious in relationships and needs constant reassurance");
   }
 
-  const sort = arr => arr.sort((a, b) => b.w - a.w).slice(0, 7).map(x => x.text);
+  const sort = arr => arr.sort((a, b) => b.w - a.w).map(x => x.text);
   return { best: sort(best), worst: sort(worst) };
 }
 
@@ -509,20 +545,20 @@ function growthLines(v) {
 
   // Check each GROWTH_VECTORS dim — if someone is "stretched", surface a line about it
   const stretched = [
-    ["conflict",   v => v.conflict   !== undefined && v.conflict   >= 2,   "tends to avoid conflict rather than address it directly. Someone who stays calm and names things without making it an attack can shift what feels possible."],
-    ["empathy",    v => v.empathy    !== undefined && v.empathy    >= 2,   "reaches for practical solutions when someone's struggling rather than just being present. Someone who sits with things can expand that instinct."],
-    ["auth",       v => v.auth       !== undefined && v.auth       >= 2,   "takes a long time to lower their guard. Being close to someone who is genuinely open — not as a performance — tends to make that easier over time."],
-    ["boundaries", v => v.boundaries !== undefined && v.boundaries >= 2,   "absorbs a lot before naming limits. Someone who sets boundaries without drama can make it easier to do the same."],
-    ["attach",     v => v.attach     !== undefined && v.attach     >= 1.5, "carries some anxiety or distance in relationships. A secure presence — consistent, not punishing — is one of the few things that actually shifts attachment patterns."],
-    ["stability",  v => v.stability  !== undefined && v.stability  >= 2,   "runs reactive and feels things intensely. Being regularly around someone who doesn't escalate can quietly expand what regulated feels like from the inside."],
-    ["differ",     v => v.differ     !== undefined && v.differ     <= 0.8, "leans toward merger in relationships. Someone who holds their own identity without needing distance can show that closeness and selfhood aren't in conflict."],
+    ["conflict",   v => v.conflict   !== undefined && v.conflict   >= 2,   "You tend to avoid conflict rather than address it directly. Someone who stays calm and names things without making it an attack can shift what feels possible."],
+    ["empathy",    v => v.empathy    !== undefined && v.empathy    >= 2,   "You reach for practical solutions when someone's struggling rather than just being present. Someone who sits with things can expand that instinct."],
+    ["auth",       v => v.auth       !== undefined && v.auth       >= 2,   "You take a long time to lower your guard. Being close to someone who is genuinely open — not as a performance — tends to make that easier over time."],
+    ["boundaries", v => v.boundaries !== undefined && v.boundaries >= 2,   "You absorb a lot before naming limits. Someone who sets boundaries without drama can make it easier to do the same."],
+    ["attach",     v => v.attach     !== undefined && v.attach     >= 1.5, "You carry some anxiety or distance in relationships. A secure presence — consistent, not punishing — is one of the few things that actually shifts attachment patterns."],
+    ["stability",  v => v.stability  !== undefined && v.stability  >= 2,   "You run reactive and feel things intensely. Being regularly around someone who doesn't escalate can quietly expand what regulated feels like from the inside."],
+    ["differ",     v => v.differ     !== undefined && v.differ     <= 0.8, "You lean toward merger in relationships. Someone who holds their own identity without needing distance can show that closeness and selfhood aren't in conflict."],
   ];
 
   stretched.forEach(([, isStretched, text]) => {
     if (isStretched(v)) lines.push(text);
   });
 
-  return lines.slice(0, 3);
+  return lines;
 }
 
 function renderFitSummary() {
@@ -744,6 +780,7 @@ function closePrivacy(e) {
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 (function init() {
+  migrateStorage();
   const params = new URLSearchParams(location.search);
   const compareCode = params.get("compare");
   const meCode = params.get("me");
@@ -764,7 +801,13 @@ function closePrivacy(e) {
     if (vec) {
       state.myCode = meCode;
       state.myVector = vec;
-      saveState();
+      // restore saved answers without overwriting them
+      const savedAnswers = localStorage.getItem("matchme_answers");
+      if (savedAnswers) state.answers = JSON.parse(savedAnswers);
+      const hadDating = localStorage.getItem("matchme_allQ_dating");
+      if (hadDating === "true") state.allQ = [...QUESTIONS_CORE, ...QUESTIONS_DATING];
+      localStorage.setItem("matchme_code", meCode);
+      localStorage.setItem("matchme_vector", JSON.stringify(vec));
       renderProfile();
       return;
     }
