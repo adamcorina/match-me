@@ -516,6 +516,11 @@ html, body {
   background: rgba(200,184,154,0.03);
 }
 
+.fit-growth {
+  border-color: rgba(180,210,180,0.5);
+  background: rgba(180,210,180,0.04);
+}
+
 .fit-heading {
   font-size: 11px;
   text-transform: uppercase;
