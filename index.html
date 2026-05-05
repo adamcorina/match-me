@@ -17,7 +17,7 @@
     <div class="landing-inner">
       <div class="logo">match<span class="dot">.</span>me</div>
       <h1>compatibility<br><em>before</em> connection</h1>
-      <p class="sub">Take a 5-minute quiz. Get a code. Put it in your bio.<br>Let others understand the dynamic before you even meet.</p>
+      <p class="sub">Take an 8-minute quiz. Get a code. Put it in your bio.<br>Let others understand the dynamic before you even meet.</p>
       <p class="sub-note">One rule: be honest. Low friction isn't the same as the right person.</p>
       <button class="btn-primary" onclick="startQuiz()">Start quiz →</button>
     </div>
@@ -61,7 +61,7 @@
     <div class="gate-inner">
       <div class="gate-icon">+</div>
       <h2>Add dating section?</h2>
-      <p>26 more questions about attachment, intimacy and direction.<br>Dating compatibility only shows when both people opt in.</p>
+      <p>23 more questions about attachment, intimacy and direction.<br>Dating compatibility only shows when both people opt in.</p>
       <div class="gate-btns">
         <button class="btn-outline" onclick="chooseDating(false)">Friendship only</button>
         <button class="btn-primary" onclick="chooseDating(true)">Add dating</button>
@@ -104,14 +104,32 @@
   <div id="screen-result" class="screen">
     <div class="result-inner">
       <button class="btn-back-abs" onclick="showProfile()">← Back</button>
-      <div class="result-score-wrap">
-        <svg class="ring-svg" viewBox="0 0 120 120">
-          <circle class="ring-bg" cx="60" cy="60" r="52"/>
-          <circle class="ring-fg" id="ring-fg" cx="60" cy="60" r="52" stroke-dasharray="326.7" stroke-dashoffset="326.7"/>
-        </svg>
-        <div class="result-score-inner">
-          <div class="result-pct" id="r-pct">—</div>
-          <div class="result-lbl" id="r-lbl"></div>
+      <div class="result-scores">
+        <div class="result-score-wrap">
+          <div class="result-ring-wrap">
+            <svg class="ring-svg" viewBox="0 0 120 120">
+              <circle class="ring-bg" cx="60" cy="60" r="52"/>
+              <circle class="ring-fg" id="ring-fg" cx="60" cy="60" r="52" stroke-dasharray="326.7" stroke-dashoffset="326.7"/>
+            </svg>
+            <div class="result-score-inner">
+              <div class="result-score-title">dynamic</div>
+              <div class="result-pct" id="r-pct">—</div>
+              <div class="result-score-sub" id="r-lbl"></div>
+            </div>
+          </div>
+        </div>
+        <div class="result-score-wrap">
+          <div class="result-ring-wrap">
+            <svg class="ring-svg" viewBox="0 0 120 120">
+              <circle class="ring-bg" cx="60" cy="60" r="52"/>
+              <circle class="ring-fg" id="ring-growth-fg" cx="60" cy="60" r="52" stroke-dasharray="326.7" stroke-dashoffset="326.7"/>
+            </svg>
+            <div class="result-score-inner">
+              <div class="result-score-title">growth</div>
+              <div class="result-pct" id="r-growth-pct">—</div>
+              <div class="result-score-sub" id="r-growth-lbl"></div>
+            </div>
+          </div>
         </div>
       </div>
       <div class="result-tabs">

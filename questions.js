@@ -1,4 +1,7 @@
 const QUESTIONS_CORE = [
+
+  // comm: directness vs async processing. 0=face-to-face, 3=written/indirect.
+  // Axis: immediate/in-person ←→ asynchronous/written
   {
     section: "Communication",
     q: "When you have something important to say, you prefer...",
@@ -10,20 +13,26 @@ const QUESTIONS_CORE = [
     ],
     dim: "comm", w: [0, 1, 2, 1.5]
   },
+
+  // conflict: approach-to-conflict when hurt, early/untested relationship. 0=confronts immediately, 3=withdraws.
+  // Axis: head-on ←→ avoidant. Anchored to before you know the relationship can handle it.
   {
     section: "Conflict",
-    q: "Someone close says something that hurts you. Your first reaction...",
+    q: "A friend you haven't had any conflict with yet says something that hurts you. Your first reaction...",
     opts: [
-      "I say how I feel immediately. I can't sit on it",
-      "I wait until I've calmed down, then bring it up",
-      "I let it pass. I'd rather move on than have a discussion that might make things worse",
-      "I create some distance. It's hard to stay open with someone right after they've hurt me"
+      "I say how I feel. I'd rather know early if we can handle this",
+      "I wait until I've calmed down, then bring it up carefully",
+      "I let it pass. I don't know yet if it's worth the risk",
+      "I create some distance. It's hard to stay open when I'm not sure where I stand"
     ],
     dim: "conflict", w: [0, 1, 2, 3]
   },
+
+  // conflict: conflict expression style in an established relationship. 0=direct, 3=keeps the peace.
+  // Axis: direct confrontation ←→ conflict suppression. Anchored to someone you know well.
   {
     section: "Conflict",
-    q: "You're in a disagreement with someone. What does it look like from the outside?",
+    q: "You're in a disagreement with someone you know well. What does it look like from the outside?",
     opts: [
       "Direct and unfiltered. I say what I think, I don't soften it",
       "Firm but measured. I make my point clearly without making it personal",
@@ -32,6 +41,9 @@ const QUESTIONS_CORE = [
     ],
     dim: "conflict", w: [0, 1, 2, 3]
   },
+
+  // energy: social energy / introversion-extraversion. 0=socially driven, 3=solitary.
+  // Axis: extrovert ←→ introvert (weekend preference)
   {
     section: "Social energy",
     q: "The perfect weekend looks like...",
@@ -43,6 +55,9 @@ const QUESTIONS_CORE = [
     ],
     dim: "energy", w: [0, 1, 3, 2]
   },
+
+  // energy: social ease with strangers. 0=thrives in crowds, 3=avoids.
+  // Axis: extrovert ←→ introvert (new people)
   {
     section: "Social energy",
     q: "At a big party with new people, you...",
@@ -54,6 +69,10 @@ const QUESTIONS_CORE = [
     ],
     dim: "energy", w: [0, 1, 2, 3]
   },
+
+  // values: categorical — what someone optimises for in close relationships.
+  // Type: exact. No axis — 4 qualitatively different orientations.
+  // 0=Reliability, 1=Respect, 2=Growth, 3=Ease
   {
     section: "Values",
     q: "What matters most in a close relationship?",
@@ -63,21 +82,13 @@ const QUESTIONS_CORE = [
       "Growth. Pushing each other to be better",
       "Ease. Feeling good together without having to work at it"
     ],
-    dim: "values", w: [0, 2, 1, 3]
+    dim: "values"
   },
+
+  // boundaries: limit-setting under social pressure. 0=self-sacrificing, 3=firm self-priority.
+  // Axis: porous/self-sacrificing ←→ direct/self-protective
   {
-    section: "Values",
-    q: "You have an unexpected free month, no obligations. You'd most want to...",
-    opts: [
-      "Settle into a good routine. Cook, read, see the same people regularly",
-      "Travel somewhere new, say yes to things, no fixed plan",
-      "Go deep on something. A project, a relationship, an idea",
-      "Decompress. Low effort, low stakes, just feel at ease"
-    ],
-    dim: "values", w: [0, 3, 1, 2]
-  },
-  {
-    section: "Values",
+    section: "Boundaries",
     q: "A friend asks a big favor at the worst moment for you. You...",
     opts: [
       "Help. That's what friends do",
@@ -85,8 +96,11 @@ const QUESTIONS_CORE = [
       "Say not now, but offer an alternative",
       "Decline. I need to put myself first sometimes"
     ],
-    dim: "values", w: [0, 1, 2, 3]
+    dim: "boundaries", w: [0, 1, 2, 3]
   },
+
+  // rhythm: contact frequency preference. 0=frequent/regular, 3=loose/gap-tolerant.
+  // Axis: high contact ←→ organic/low contact
   {
     section: "Rhythm",
     q: "How do you prefer to maintain close relationships?",
@@ -98,6 +112,9 @@ const QUESTIONS_CORE = [
     ],
     dim: "rhythm", w: [0, 1, 2, 3]
   },
+
+  // rhythm: response to imbalance in who initiates. 0=unbothered, 3=reads it as signal of distance.
+  // Axis: high contact / reciprocity-insensitive ←→ gap-tolerant / reciprocity-sensitive
   {
     section: "Rhythm",
     q: "You notice you're always the one reaching out first. You...",
@@ -109,6 +126,9 @@ const QUESTIONS_CORE = [
     ],
     dim: "rhythm", w: [0, 1, 2, 3]
   },
+
+  // empathy: support style when someone is in distress. 0=emotionally present, 3=shares experience (deflects to self — slightly off-axis, hence w=3 not ideal but closest).
+  // Axis: emotional attunement ←→ practical/solution-oriented
   {
     section: "Empathy",
     q: "Someone tells you they have a serious problem. You...",
@@ -120,6 +140,9 @@ const QUESTIONS_CORE = [
     ],
     dim: "empathy", w: [0, 1, 2, 3]
   },
+
+  // empathy: proactiveness in noticing others' distress. 0=names it directly, 2=waits.
+  // Axis: proactive attunement ←→ passive/waits to be invited
   {
     section: "Empathy",
     q: "You sense a close friend is struggling but they haven't said anything. You...",
@@ -130,6 +153,9 @@ const QUESTIONS_CORE = [
     ],
     dim: "empathy", w: [0, 1, 2]
   },
+
+  // auth: openness / self-disclosure speed. 0=open immediately, 3=variable (context-dependent).
+  // Axis: open/transparent ←→ guarded/slow to reveal
   {
     section: "Authenticity",
     q: "Think of someone you've only known a few months. How much do they actually know about you?",
@@ -141,6 +167,9 @@ const QUESTIONS_CORE = [
     ],
     dim: "auth", w: [0, 1, 3, 2]
   },
+
+  // auth: self-consistency across social contexts. 0=same in all contexts, 2=adapts significantly.
+  // Axis: consistent self ←→ context-adaptive self
   {
     section: "Authenticity",
     q: "How much do you adapt who you are depending on the company?",
@@ -151,6 +180,9 @@ const QUESTIONS_CORE = [
     ],
     dim: "auth", w: [0, 1, 2]
   },
+
+  // depth: appetite for conceptual/emotional depth in conversation. 0=abstract/philosophical, 3=practical/present.
+  // Axis: conceptual/reflective ←→ practical/grounded
   {
     section: "Depth",
     q: "The conversations you remember, the ones that stay with you, tend to be about...",
@@ -162,37 +194,37 @@ const QUESTIONS_CORE = [
     ],
     dim: "depth", w: [0, 1, 3, 1.5]
   },
-  {
-    section: "Depth",
-    q: "When you're going through something difficult, what helps you process it?",
-    opts: [
-      "Talking it through with someone. I understand what I feel by saying it out loud",
-      "Writing it down. Getting it out of my head and onto paper",
-      "Sitting with it alone until it settles",
-      "Doing something. Movement, work, anything that gets me out of my head"
-    ],
-    dim: "depth", w: [0, 1, 2, 3]
-  },
+
+  // humor: comedic register. Type: overlap (pick up to 2).
+  // No axis — categorical matching. Absurd/dry/playful/dark/physical.
   {
     section: "Humour",
-    q: "Your humour is mostly...",
+    q: "Your humour is mostly... Pick up to 2.",
     opts: [
       "Absurd and surreal. Non-sequiturs, weird logic, jokes that need a very specific receiver",
       "Dry and ironic. Deadpan, subtext, you have to be paying attention",
-      "Playful and teasing. I joke about people as much as myself, all in good fun"
+      "Playful and teasing. I joke about people as much as myself, all in good fun",
+      "Dark or taboo. I find the uncomfortable things funny",
+      "Physical and reactive. Impressions, faces, timing — more body than words"
     ],
-    dim: "humor", w: [0, 1, 2]
+    dim: "humor", multiSelect: 2
   },
+
+  // conflict: tolerance for humour as deflection during tension. 0=welcomes it, 2=finds it deflecting.
+  // Axis: conflict-deflecting ←→ conflict-direct (complementary angle to conflict questions above)
   {
-    section: "Humour",
+    section: "Conflict",
     q: "Someone uses humour to lighten a tense moment. You...",
     opts: [
       "Appreciate it. Laughter is how I navigate hard things too",
       "Go along with it, though I need the serious part addressed eventually",
       "Find it deflecting. Some moments need to be felt, not laughed off"
     ],
-    dim: "humor", w: [0, 1, 2]
+    dim: "conflict", w: [2, 1, 0]
   },
+
+  // boundaries: response to limit violations. 0=names it immediately, 3=absorbs silently.
+  // Axis: direct/explicit ←→ passive/absorbs quietly
   {
     section: "Boundaries",
     q: "When someone tries to cross your limits, you...",
@@ -204,16 +236,9 @@ const QUESTIONS_CORE = [
     ],
     dim: "boundaries", w: [0, 1, 2, 3]
   },
-  {
-    section: "Boundaries",
-    q: "You've been spending a lot of time with someone you care about. After a few days, you...",
-    opts: [
-      "I start to feel the pull to decompress. Even if it's been great, I need time to myself to reset",
-      "Don't really notice. I'd happily keep going",
-      "Actually find it harder when it ends. Connection is what recharges me"
-    ],
-    dim: "boundaries", w: [0, 1, 2]
-  },
+
+  // stability: emotional reactivity in ambiguous social situations. 0=unbothered, 3=ruminating.
+  // Axis: emotionally steady ←→ reactive/anxious
   {
     section: "Emotional tone",
     q: "Someone you're close to doesn't reply for two days. You...",
@@ -225,16 +250,23 @@ const QUESTIONS_CORE = [
     ],
     dim: "stability", w: [0, 1, 2, 3]
   },
+
+  // stability: emotional intensity of response to disruption. 0=barely registers, 3=state fully shifts.
+  // Axis: emotionally steady ←→ reactive/overwhelmed
   {
     section: "Emotional tone",
-    q: "Your general outlook on things tends to be...",
+    q: "When something throws you off – an unexpected change, a tense interaction – the feeling is usually...",
     opts: [
-      "Optimistic. I default to things working out",
-      "Realistic. I try to see things as they are",
-      "Cautious. I'd rather expect less and be pleasantly surprised"
+      "Barely registers. I adapt without much internal reaction",
+      "Noticeable but contained. I feel it and move through it",
+      "It takes over for a bit. Hard to focus on other things until it settles",
+      "Strong and immediate. My whole state shifts when something hits me"
     ],
-    dim: "stability", w: [0, 1, 2]
+    dim: "stability", w: [0, 1, 2, 3]
   },
+
+  // energy: home as social vs private space. 0=open door, 2=home is private.
+  // Axis: socially open home ←→ private/boundaried home
   {
     section: "Social energy",
     q: "When it comes to your living space and having people around...",
@@ -245,20 +277,111 @@ const QUESTIONS_CORE = [
     ],
     dim: "energy", w: [0, 1, 2]
   },
+
+  // lifestyle: output orientation in free time. 0=productive/goal-driven, 3=rest/switch-off.
+  // Axis: output-driven ←→ rest-driven
   {
-    section: "Values",
-    q: "Outside of work and close relationships, your energy mostly goes toward...",
+    section: "Lifestyle",
+    q: "When you have genuinely free time with no obligations, your natural pull is toward...",
     opts: [
-      "Active and outdoors. I need movement and fresh air",
-      "Creative or intellectual things. Making, reading, building ideas",
-      "Social things. Events, people, experiences",
-      "Rest and recovery. I protect my downtime fiercely"
+      "Getting things done. I feel better when I've used the time well",
+      "Making or building something. Creative output feels like rest to me",
+      "Being present. A walk, a meal, a conversation – nothing that needs to be produced",
+      "Doing as little as possible. Real rest means switching off completely"
     ],
-    dim: "values", w: [0, 1, 2, 3]
+    dim: "lifestyle", w: [0, 1, 2, 3]
   },
+
+  // stability: emotional regulation style. 0=processes with others (healthy), 3=suppresses/pushes through.
+  // Axis: open processing ←→ suppression
+  {
+    section: "Emotional tone",
+    q: "When you're upset, what usually helps you get back to yourself?",
+    opts: [
+      "Talking it through with someone I trust",
+      "Time alone to understand what I'm feeling",
+      "Doing something practical or distracting until it passes",
+      "I mostly push through it. It stays with me but I carry on"
+    ],
+    dim: "stability", w: [0, 1, 2, 3]
+  },
+
+  // conflict: repair threshold / belief about whether effort in relationships is normal. 0=effort is expected, 2=effort is a red flag.
+  // Axis: high repair willingness ←→ low repair willingness / ease-seeking
+  {
+    section: "Conflict",
+    q: "When a close relationship starts taking real effort, your instinct is...",
+    opts: [
+      "That's normal. Important relationships need maintenance",
+      "Try to understand what's happening before drawing conclusions",
+      "Wonder if something is fundamentally off. The right ones shouldn't feel this hard"
+    ],
+    dim: "conflict", w: [0, 1.5, 2.5]
+  },
+
+  // direction: life orientation / what someone is optimising for in the next few years.
+  // Type: exact. No axis — 4 qualitatively different orientations.
+  // 0=Stability, 1=Freedom, 2=Growth, 3=Connection
+  {
+    section: "Direction",
+    q: "Thinking a few years ahead, what do you want?",
+    opts: [
+      "Stability. A place, a person, a good routine",
+      "Freedom. Flexibility to move and change",
+      "Growth. Projects, adventures, building something",
+      "Connection. Wherever the right people are, that's where I want to be"
+    ],
+    dim: "direction"
+  },
+
+  // admire: default charitable interpretation of others' behaviour. 0=generous, 3=critical/pattern-matching.
+  // Axis: generous/warm regard ←→ critical/guarded regard
+  {
+    section: "Regard",
+    q: "When someone you care about does something frustrating, your first instinct is...",
+    opts: [
+      "They probably had a reason. I give the benefit of the doubt",
+      "I notice it but don't jump to conclusions",
+      "I take it at face value and feel the irritation",
+      "I tend to connect it to a pattern I've noticed before"
+    ],
+    dim: "admire", w: [0, 1, 2, 3]
+  },
+
+  // admire: dominant emotional stance toward close relationships. 0=admiration, 3=cautious/guarded.
+  // Axis: positive regard ←→ guarded/critical regard
+  {
+    section: "Regard",
+    q: "When you think about the people you're closest to, what's the dominant feeling?",
+    opts: [
+      "Genuine admiration. There's something about them I find remarkable",
+      "Warmth. I know them fully and like them anyway",
+      "Loyalty. I'm committed to them, though I see them clearly",
+      "Caution. I care, but I'm always a little aware of what they're capable of"
+    ],
+    dim: "admire", w: [0, 1, 2, 3]
+  },
+
+  // worldview: role of faith/spirituality in daily life. 0=faith-led, 3=actively secular.
+  // Axis: faith-led ←→ secular
+  {
+    section: "Worldview",
+    q: "Faith or spirituality in your life...",
+    opts: [
+      "Plays an active role. It shapes how I see things",
+      "Is something I think about, but loosely. More personal than institutional",
+      "Isn't really part of how I move through the world",
+      "I'm actively skeptical of it"
+    ],
+    dim: "worldview", w: [0, 1, 2, 3]
+  },
+
 ];
 
 const QUESTIONS_DATING = [
+
+  // attach: response to insecurity in a relationship. 0=secure/direct, 3=disorganised (wants both space and reassurance).
+  // Axis: secure ←→ anxious/avoidant/disorganised
   {
     section: "Attachment",
     q: "When you feel insecure in a relationship, you usually...",
@@ -270,6 +393,9 @@ const QUESTIONS_DATING = [
     ],
     dim: "attach", w: [2, 1, 0, 3]
   },
+
+  // attach: baseline feeling when a relationship is going well. 0=trust/secure, 3=keeps distance.
+  // Axis: secure/trusting ←→ avoidant/detached
   {
     section: "Attachment",
     q: "When a new relationship is going well, your underlying feeling is...",
@@ -281,6 +407,9 @@ const QUESTIONS_DATING = [
     ],
     dim: "attach", w: [0, 1, 2, 3]
   },
+
+  // attach: jealousy / security when partner spends time with others. 0=secure, 3=needs reassurance.
+  // Axis: secure ←→ anxious
   {
     section: "Attachment",
     q: "When someone you're with spends a lot of time with an ex or a close friend you don't know well, you...",
@@ -292,6 +421,9 @@ const QUESTIONS_DATING = [
     ],
     dim: "attach", w: [0, 1, 2, 3]
   },
+
+  // intimacy: what produces the feeling of closeness with a partner. 0=deep disclosure, 3=implicit/chosen.
+  // Axis: vulnerability-led closeness ←→ quiet presence/implicit closeness
   {
     section: "Intimacy",
     q: "When do you feel closest to a partner?",
@@ -303,6 +435,9 @@ const QUESTIONS_DATING = [
     ],
     dim: "intimacy", w: [0, 1, 2, 3]
   },
+
+  // intimacy: preferred mode of shared evening. 0=parallel solitude, 3=social/outward-facing.
+  // Axis: inward/quiet togetherness ←→ active/social togetherness
   {
     section: "Intimacy",
     q: "A good evening with a partner looks like...",
@@ -314,17 +449,9 @@ const QUESTIONS_DATING = [
     ],
     dim: "intimacy", w: [0, 1, 2, 3]
   },
-  {
-    section: "Direction",
-    q: "Thinking a few years ahead, what do you want?",
-    opts: [
-      "Stability. A place, a person, a good routine",
-      "Freedom. Flexibility to move and change",
-      "Growth. Projects, adventures, building something",
-      "Not sure, I prefer to see how it unfolds"
-    ],
-    dim: "direction", w: [0, 3, 1, 2]
-  },
+
+  // direction_children: children timeline/intention. 0=definitely yes, 3=not for me.
+  // Axis: wants children ←→ does not want children
   {
     section: "Direction",
     q: "Children are...",
@@ -334,8 +461,11 @@ const QUESTIONS_DATING = [
       "Maybe, I'm not sure",
       "Not for me"
     ],
-    dim: "direction", w: [0, 1, 2, 3]
+    dim: "direction_children", w: [0, 1, 2, 3]
   },
+
+  // lovelang: primary love language(s). Type: overlap (pick up to 2).
+  // No axis — categorical matching. Acts of service/Gifts/Touch/Words/Quality time.
   {
     section: "Love language",
     q: "What makes you feel most loved? Pick up to 2.",
@@ -348,6 +478,23 @@ const QUESTIONS_DATING = [
     ],
     dim: "lovelang", multiSelect: 2
   },
+
+  // conflict: approach when fully secure — with someone you trust won't leave. 0=direct/erupts, 3=still avoidant.
+  // Axis: head-on ←→ avoidant. Captures the mode that only unlocks under real security.
+  {
+    section: "Couple conflict",
+    q: "Think of someone you fully trust — a partner or person you know won't go anywhere over a disagreement. When they do something that bothers you, you...",
+    opts: [
+      "Say it immediately. With them I don't hold back",
+      "Bring it up when the moment feels right, but I don't sit on it long",
+      "Take my time. Even with people I trust, I think before I say something",
+      "Often let it go. Even when I feel safe, confrontation doesn't come naturally"
+    ],
+    dim: "conflict", w: [0, 1, 2, 3]
+  },
+
+  // cconf: couple conflict resolution pace. 0=resolves same day, 3=lets it go/doesn't fully resolve.
+  // Axis: resolves immediately ←→ lets things go/drift
   {
     section: "Couple conflict",
     q: "When you're in conflict with a partner, how do you want it to end?",
@@ -359,6 +506,9 @@ const QUESTIONS_DATING = [
     ],
     dim: "cconf", w: [0, 1, 2, 3]
   },
+
+  // passion: how central physical chemistry is to relationship satisfaction. 0=central, 3=secondary.
+  // Axis: passion-led ←→ connection-led
   {
     section: "Passion",
     q: "Physical chemistry in a relationship is...",
@@ -370,6 +520,9 @@ const QUESTIONS_DATING = [
     ],
     dim: "passion", w: [0, 1, 2, 3]
   },
+
+  // passion: physical affection initiation. 0=initiates a lot, 3=less instinctive.
+  // Axis: physically expressive/initiating ←→ connects through words/presence
   {
     section: "Passion",
     q: "In a relationship that's going well, physical closeness is...",
@@ -381,17 +534,23 @@ const QUESTIONS_DATING = [
     ],
     dim: "passion", w: [0, 1, 2, 3]
   },
+
+  // passion: what sustains desire over time. 0=closeness/depth, 3=novelty/unpredictability.
+  // Axis: intimacy-sustains-desire ←→ novelty-sustains-desire (Perel axis)
   {
-    section: "Emotional tone",
-    q: "After a difficult conversation, you usually feel...",
+    section: "Passion",
+    q: "Over time, attraction stays alive for you through...",
     opts: [
-      "Relieved. It needed to happen and now it's done",
-      "Drained but okay. I need a bit to recover",
-      "Unsettled. I replay it, wonder if I said the right things, worry how they took it",
-      "Like I'd rather have avoided the whole thing. Even when it goes fine, I find these conversations costly"
+      "Closeness and being known. Depth keeps it real",
+      "Effort and playfulness. It needs tending but doesn't need distance",
+      "Some space and unpredictability. Familiarity alone dulls it",
+      "Novelty. When everything becomes too known, something fades"
     ],
-    dim: "stability", w: [0, 1, 2, 3]
+    dim: "passion", w: [0, 1, 2, 3]
   },
+
+  // stability: emotional recovery time after being upset. 0=bounces back quickly, 3=lingers for days.
+  // Axis: emotionally resilient ←→ emotionally sensitive/deep-feeling
   {
     section: "Emotional tone",
     q: "When something upsets you, how long does it tend to stay with you?",
@@ -403,6 +562,22 @@ const QUESTIONS_DATING = [
     ],
     dim: "stability", w: [0, 1, 2, 3]
   },
+
+  // differ: need for alone time after sustained togetherness. 0=needs to decompress alone, 2=recharges through connection.
+  // Axis: independent/needs solitude ←→ merged/recharges through closeness
+  {
+    section: "Independence",
+    q: "You've been spending a lot of time with a partner. After a few days, you...",
+    opts: [
+      "I start to feel the pull to decompress. Even if it's been great, I need time to myself to reset",
+      "Don't really notice. I'd happily keep going",
+      "Actually find it harder when it ends. Connection is what recharges me"
+    ],
+    dim: "differ", w: [2, 1, 0]
+  },
+
+  // differ: importance of maintaining a separate identity within a relationship. 0=needs independence, 2=seeks togetherness.
+  // Axis: independent self ←→ shared/merged life
   {
     section: "Independence",
     q: "In a relationship, having your own separate life — friends, interests, time — is...",
@@ -413,16 +588,22 @@ const QUESTIONS_DATING = [
     ],
     dim: "differ", w: [3, 2, 0]
   },
+
+  // lifestyle: output orientation in shared free time. 0=wants to do/achieve, 2=wants to rest/unfold.
+  // Axis: output-driven ←→ rest-driven (relationship context)
   {
-    section: "Values",
-    q: "When it comes to how you spend your free time together, you'd want...",
+    section: "Lifestyle",
+    q: "When you have a free day with a partner and no plans, you'd naturally...",
     opts: [
-      "Someone who matches my energy. We do things, we're active, we're out",
-      "A mix. Some adventures, some slow days",
-      "Someone low-key. Comfort, ease, no pressure to be anywhere"
+      "Want to make something of it. A trip, a project, something to show for it",
+      "Mix it up. Some activity, some downtime",
+      "Let it unfold slowly. Nowhere to be is the whole point"
     ],
-    dim: "values", w: [0, 1, 2]
+    dim: "lifestyle", w: [0, 1, 2]
   },
+
+  // drive: career centrality / ambition. 0=achievement-driven, 2=lifestyle-led.
+  // Axis: achievement-driven ←→ lifestyle/ease-driven
   {
     section: "Direction",
     q: "Work and achievement in your life are...",
@@ -433,19 +614,26 @@ const QUESTIONS_DATING = [
     ],
     dim: "drive", w: [0, 1, 2]
   },
+
+  // roles: expected division of labour and earning in a relationship. Type: exact.
+  // No axis — 4 qualitatively different structural expectations.
+  // 0=Fully equal, 1=Flexible equal, 2=One earns more, 3=Traditional
   {
-    section: "Direction",
-    q: "Faith or spirituality in your life...",
+    section: "Roles",
+    q: "When it comes to how responsibilities split in a relationship...",
     opts: [
-      "Plays an active role. It shapes how I see things",
-      "Is something I think about, but loosely. More personal than institutional",
-      "Isn't really part of how I move through the world",
-      "I'm actively skeptical of it"
+      "Fully equal. Both working, everything shared, no default roles",
+      "Mostly equal but flexible — we go with what works for each person's situation",
+      "I'd be comfortable with one of us earning more and the other contributing differently",
+      "I'd want a more traditional structure. Clear roles, not everything split down the middle"
     ],
-    dim: "worldview", w: [0, 1, 2, 3]
+    dim: "roles"
   },
+
+  // finances: spending vs saving orientation. 0=spends freely, 3=saves by default.
+  // Axis: spend-freely ←→ save-by-default
   {
-    section: "Direction",
+    section: "Finances",
     q: "When it comes to money, you tend to...",
     opts: [
       "Spend freely. Life is now, I'd rather have the experience",
@@ -453,8 +641,11 @@ const QUESTIONS_DATING = [
       "Spend on what matters, save the rest. I think about it",
       "Save by default. Security matters more to me than spending"
     ],
-    dim: "drive", w: [0, 1, 2, 3]
+    dim: "finances", w: [0, 1, 2, 3]
   },
+
+  // depth: need for intellectual stimulation from a partner. 0=needs it, 2=not a priority.
+  // Axis: intellectually driven ←→ connection through other means
   {
     section: "Depth",
     q: "With a partner, you need to feel...",
@@ -465,18 +656,11 @@ const QUESTIONS_DATING = [
     ],
     dim: "depth", w: [0, 1, 2]
   },
+
+  // space: tidiness / domestic standards in shared space. 0=needs order, 3=relaxed about clutter.
+  // Axis: ordered/tidy ←→ relaxed/lived-in
   {
-    section: "Authenticity",
-    q: "When a relationship goes through a rough patch, you...",
-    opts: [
-      "Want to understand it. I'll sit with it, talk it through, figure out what happened",
-      "Process it briefly then move forward",
-      "Move on. Dwelling doesn't help me"
-    ],
-    dim: "auth", w: [0, 1, 2]
-  },
-  {
-    section: "Values",
+    section: "Space & tidiness",
     q: "When it comes to shared space...",
     opts: [
       "I need things clean and organised. Clutter affects my mood",
@@ -486,28 +670,9 @@ const QUESTIONS_DATING = [
     ],
     dim: "space", w: [0, 1, 2, 3]
   },
-  {
-    section: "Regard",
-    q: "When someone you care about does something frustrating, your first instinct is...",
-    opts: [
-      "They probably had a reason. I give the benefit of the doubt",
-      "I notice it but don't jump to conclusions",
-      "I take it at face value and feel the irritation",
-      "I tend to connect it to a pattern I've noticed before"
-    ],
-    dim: "admire", w: [0, 1, 2, 3]
-  },
-  {
-    section: "Regard",
-    q: "When you think about the people you're closest to, what's the dominant feeling?",
-    opts: [
-      "Genuine admiration. There's something about them I find remarkable",
-      "Warmth. I know them fully and like them anyway",
-      "Loyalty. I'm committed to them, though I see them clearly",
-      "Caution. I care, but I'm always a little aware of what they're capable of"
-    ],
-    dim: "admire", w: [0, 1, 2, 3]
-  },
+
+  // finances: pooling vs separating money in a long-term relationship. 0=fully shared, 3=fully separate.
+  // Axis: shared finances ←→ independent finances
   {
     section: "Finances",
     q: "In a long-term relationship, money should be...",
@@ -519,6 +684,9 @@ const QUESTIONS_DATING = [
     ],
     dim: "finances", w: [0, 1, 2, 3]
   },
+
+  // finances: autonomy in major financial/life decisions. 0=fully joint, 2=fully independent.
+  // Axis: joint decision-making ←→ individual autonomy
   {
     section: "Finances",
     q: "Big decisions like moving city, changing jobs, or taking on debt should be...",
@@ -529,14 +697,5 @@ const QUESTIONS_DATING = [
     ],
     dim: "finances", w: [0, 1, 2]
   },
-  {
-    section: "Finances",
-    q: "When you and a partner have different comfort levels around spending (takeout vs cooking, holidays, nights out)...",
-    opts: [
-      "I adjust to what works for both of us. The gap is mine to bridge internally",
-      "We find a middle ground each time. Neither of us always gets their preference",
-      "I go with what I'm comfortable with. I'll cover any difference if needed"
-    ],
-    dim: "finances", w: [0, 1, 2]
-  }
+
 ];

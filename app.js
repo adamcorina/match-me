@@ -9,12 +9,26 @@ const state = {
   myCode: null,
 };
 
+// ─── Storage versioning ───────────────────────────────────────────────────────
+const STORAGE_VERSION = "3";
+
+function migrateStorage() {
+  if (localStorage.getItem("matchme_version") !== STORAGE_VERSION) {
+    localStorage.removeItem("matchme_code");
+    localStorage.removeItem("matchme_vector");
+    localStorage.removeItem("matchme_answers");
+    localStorage.removeItem("matchme_allQ_dating");
+    localStorage.setItem("matchme_version", STORAGE_VERSION);
+  }
+}
+
 // Persist to localStorage
 function saveState() {
+  localStorage.setItem("matchme_answers", JSON.stringify(state.answers));
+  localStorage.setItem("matchme_allQ_dating", JSON.stringify(state.allQ.length > QUESTIONS_CORE.length));
   if (state.myCode) {
     localStorage.setItem("matchme_code", state.myCode);
     localStorage.setItem("matchme_vector", JSON.stringify(state.myVector));
-    localStorage.setItem("matchme_answers", JSON.stringify(state.answers));
   }
 }
 
@@ -26,9 +40,18 @@ function loadState() {
     state.myVector = JSON.parse(vec);
     const savedAnswers = localStorage.getItem("matchme_answers");
     if (savedAnswers) state.answers = JSON.parse(savedAnswers);
+    const hadDating = localStorage.getItem("matchme_allQ_dating");
+    if (hadDating === "true") state.allQ = [...QUESTIONS_CORE, ...QUESTIONS_DATING];
     return true;
   }
   return false;
+}
+
+function loadSavedAnswers() {
+  const savedAnswers = localStorage.getItem("matchme_answers");
+  const hadDating = localStorage.getItem("matchme_allQ_dating");
+  if (hadDating === "true") state.allQ = [...QUESTIONS_CORE, ...QUESTIONS_DATING];
+  return savedAnswers ? JSON.parse(savedAnswers) : [];
 }
 
 // ─── Navigation helpers ───────────────────────────────────────────────────────
@@ -63,17 +86,22 @@ function checkFromLanding() {
 // ─── Quiz ─────────────────────────────────────────────────────────────────────
 function startQuiz() {
   state.allQ = [...QUESTIONS_CORE];
-  state.answers = [];
-  state.current = 0;
   state.gatePassed = false;
   state.addingRomantic = false;
+  const saved = loadSavedAnswers();
+  state.answers = saved.length ? saved : [];
+  state.current = 0;
   showScreen("screen-quiz");
   renderQuestion();
 }
 
 function startDatingQuiz() {
   state.allQ = [...QUESTIONS_CORE, ...QUESTIONS_DATING];
-  state.answers = new Array(QUESTIONS_CORE.length).fill(undefined);
+  // preserve existing core answers, load saved dating answers if any
+  const saved = loadSavedAnswers();
+  if (state.answers.length < QUESTIONS_CORE.length) {
+    state.answers = saved.length ? saved : new Array(QUESTIONS_CORE.length).fill(undefined);
+  }
   state.current = QUESTIONS_CORE.length;
   state.gatePassed = true;
   state.addingRomantic = true;
@@ -136,12 +164,15 @@ function selectOption(i) {
     });
     document.getElementById("btn-next").disabled = false;
   }
+  saveState();
 }
 
 function goBack() {
   if (state.current > 0) {
     state.current--;
     renderQuestion();
+  } else if (state.myVector) {
+    renderProfile();
   } else {
     showScreen("screen-landing");
   }
@@ -151,10 +182,15 @@ function goNext() {
   const ans = state.answers[state.current];
   if (ans === undefined || (Array.isArray(ans) && ans.length === 0)) return;
 
-  // Show dating gate after core questions
+  // Show dating gate after core questions — skip if already did dating before
   if (state.current === QUESTIONS_CORE.length - 1 && !state.gatePassed) {
-    showScreen("screen-gate");
-    return;
+    if (state.allQ.length > QUESTIONS_CORE.length) {
+      // already includes dating questions (loaded from saved), just continue
+      state.gatePassed = true;
+    } else {
+      showScreen("screen-gate");
+      return;
+    }
   }
 
   if (state.current < state.allQ.length - 1) {
@@ -224,10 +260,12 @@ function renderProfile() {
     if (!meta) return;
     const val = state.myVector[d];
 
-    if (meta.display === "category") {
+    if (meta.display === "category" || meta.type === "exact" || meta.type === "overlap") {
       let activeIndices;
       if (meta.type === "overlap") {
-        activeIndices = new Set(lovelangFromIndex(val));
+        activeIndices = new Set(pick2FromIndex(val));
+      } else if (meta.type === "exact") {
+        activeIndices = new Set([val]);
       } else {
         const count = meta.cats.length;
         activeIndices = new Set([Math.min(Math.round((val / 3) * (count - 1)), count - 1)]);
@@ -242,7 +280,7 @@ function renderProfile() {
           <div class="pcat-boxes">${boxes}</div>
         </div>`;
     } else {
-      const pct = Math.round((val / 3) * 100);
+      const pct = Math.round((val / (meta.max || 3)) * 100);
       container.innerHTML += `
         <div class="pdim-row">
           <div class="pdim-label">${meta.label}</div>
@@ -266,33 +304,33 @@ function fitLines(v) {
   const best = [];
   const worst = [];
 
-  const lo = d => v[d] !== undefined && v[d] <= 0.8;
-  const hi = d => v[d] !== undefined && v[d] >= 2.2;
+  const lo  = d => v[d] !== undefined && v[d] <= 0.8;
+  const hi  = d => v[d] !== undefined && v[d] >= 2.2;
   const ext = (...dims) => Math.max(...dims.map(d => v[d] !== undefined ? Math.abs(v[d] - 1.5) : 0));
-  const pushBest = (dims, text) => best.push({ w: ext(...dims), text });
+  const pushBest  = (dims, text) => best.push({ w: ext(...dims), text });
   const pushWorst = (dims, text) => worst.push({ w: ext(...dims), text });
 
-  // Communication
+  // comm — direct ←→ async
   if (lo("comm")) pushBest(["comm"], "communicates directly and in the moment");
-  if (hi("comm")) pushBest(["comm"], "prefers to process before responding, and doesn't need to talk everything out face to face");
+  if (hi("comm")) pushBest(["comm"], "prefers to process before responding, doesn't need to talk everything out face to face");
   if (lo("comm")) pushWorst(["comm"], "needs a lot of time and distance before they can respond to anything emotional");
   if (hi("comm")) pushWorst(["comm"], "demands immediate face-to-face resolution of everything");
 
-  // Conflict style + resolution pace combined
-  const conflictHi = hi("conflict"), conflictLo = lo("conflict");
+  // conflict + cconf combined
+  const conflictLo = lo("conflict"), conflictHi = hi("conflict");
   const cconfLo = lo("cconf"), cconfHi = hi("cconf");
   if (conflictLo && cconfLo) {
-    pushBest(["conflict", "cconf"], "addresses friction directly and wants it resolved the same day, no lingering tension");
-    pushWorst(["conflict", "cconf"], "avoids conflict and lets things drift unresolved for days");
+    pushBest(["conflict","cconf"], "addresses friction directly and wants it resolved the same day, no lingering tension");
+    pushWorst(["conflict","cconf"], "avoids conflict and lets things drift unresolved for days");
   } else if (conflictHi && cconfHi) {
-    pushBest(["conflict", "cconf"], "needs space before revisiting things and is fine letting them settle slowly");
-    pushWorst(["conflict", "cconf"], "demands immediate confrontation and won't rest until it's resolved");
+    pushBest(["conflict","cconf"], "needs space before revisiting things and is fine letting them settle slowly");
+    pushWorst(["conflict","cconf"], "demands immediate confrontation and won't rest until it's resolved");
   } else if (conflictHi && cconfLo) {
-    pushBest(["conflict", "cconf"], "doesn't rush into conflict but still needs things resolved before the day ends, neither pushy nor avoidant");
-    pushWorst(["conflict", "cconf"], "either forces confrontation immediately or lets things fester indefinitely");
+    pushBest(["conflict","cconf"], "doesn't rush into conflict but still needs things resolved before the day ends");
+    pushWorst(["conflict","cconf"], "either forces confrontation immediately or lets things fester indefinitely");
   } else if (conflictLo && cconfHi) {
-    pushBest(["conflict", "cconf"], "addresses things directly but isn't rigid about when it gets fully resolved");
-    pushWorst(["conflict", "cconf"], "either blows up immediately or refuses to ever fully address it");
+    pushBest(["conflict","cconf"], "addresses things directly but isn't rigid about when it gets fully resolved");
+    pushWorst(["conflict","cconf"], "either blows up immediately or refuses to ever fully address it");
   } else if (conflictLo) {
     pushBest(["conflict"], "addresses friction head-on rather than letting it sit");
     pushWorst(["conflict"], "avoids conflict entirely or shuts down when things get tense");
@@ -301,19 +339,39 @@ function fitLines(v) {
     pushWorst(["conflict"], "pushes for resolution before you've had time to process");
   } else if (cconfLo) {
     pushBest(["cconf"], "needs to resolve things the same day, no overnight tension");
-    pushWorst(["cconf"], "can let unresolved things drift for days or weeks");
+    pushWorst(["cconf"], "lets unresolved things drift for days or weeks");
   } else if (cconfHi) {
     pushBest(["cconf"], "is fine letting things settle in their own time");
   }
 
-  // Depth
+  // auth — open ←→ guarded
+  if (lo("auth")) {
+    pushBest(["auth"], "is open and doesn't hide much, what you see is what you get");
+    pushWorst(["auth"], "takes years to let anyone in and never fully does");
+  }
+  if (hi("auth")) {
+    pushBest(["auth"], "takes their time to open up and doesn't perform warmth they don't feel");
+    pushWorst(["auth"], "overshares early and expects the same level of openness immediately");
+  }
+
+  // boundaries — direct/explicit ←→ absorbs quietly
+  if (lo("boundaries")) {
+    pushBest(["boundaries"], "names limits clearly and without drama");
+    pushWorst(["boundaries"], "never says what they need and expects you to guess");
+  }
+  if (hi("boundaries")) {
+    pushBest(["boundaries"], "doesn't make a thing of every limit, absorbs small frictions without comment");
+    pushWorst(["boundaries"], "draws hard lines at the first sign of discomfort");
+  }
+
+  // depth — conceptual ←→ practical
   if (lo("depth")) {
-    pushBest(["depth"], "goes deep, conceptual conversation, meaning, ideas");
+    pushBest(["depth"], "goes deep, real conversation, meaning, ideas");
     pushWorst(["depth"], "keeps everything on the surface and resists going deeper");
   }
   if (hi("depth")) pushBest(["depth"], "is grounded and practical rather than endlessly reflective");
 
-  // Independence (differ)
+  // differ — merged ←→ independent
   if (lo("differ")) {
     pushBest(["differ"], "is comfortable with real closeness and doesn't need distance to feel like themselves");
     pushWorst(["differ"], "needs a lot of independence or alone time to feel okay in a relationship");
@@ -323,14 +381,18 @@ function fitLines(v) {
     pushWorst(["differ"], "can't function without complete emotional merger");
   }
 
-  // Direction
-  if (lo("direction")) {
-    pushBest(["direction"], "knows roughly where they're heading in life");
-    pushWorst(["direction"], "has no sense of direction and isn't interested in figuring it out");
+  // direction — exact type, check specific values
+  const dirLabels = ["oriented toward stability and routine", "oriented toward freedom and flexibility",
+                     "oriented toward growth and building things", "oriented toward connection above all else"];
+  if (v.direction !== undefined) {
+    pushBest(["direction"], `is ${dirLabels[v.direction]}`);
+    if (v.direction === 0) pushWorst(["direction"], "has no interest in settling or building anything stable");
+    if (v.direction === 1) pushWorst(["direction"], "needs roots and a fixed plan, resists any openness");
+    if (v.direction === 2) pushWorst(["direction"], "isn't interested in building or growing toward anything");
+    if (v.direction === 3) pushWorst(["direction"], "prioritises place and plan over people");
   }
-  if (hi("direction")) pushBest(["direction"], "is comfortable keeping the future open and unscripted");
 
-  // Empathy / support style
+  // empathy — emotional ←→ practical
   if (lo("empathy")) {
     pushBest(["empathy"], "leads with emotional presence when someone's struggling, sits with it rather than trying to fix it");
     pushWorst(["empathy"], "immediately tries to fix things rather than just being there");
@@ -340,7 +402,7 @@ function fitLines(v) {
     pushWorst(["empathy"], "expects you to just listen and feel without offering any path forward");
   }
 
-  // Energy
+  // energy — social ←→ solitary
   if (lo("energy")) {
     pushBest(["energy"], "recharges around people and enjoys a shared social life");
     pushWorst(["energy"], "needs a lot of solitude to recover and rarely wants to be around others");
@@ -350,44 +412,58 @@ function fitLines(v) {
     pushWorst(["energy"], "has a packed social calendar and treats alone time as wasted time");
   }
 
-  // Finances
+  // finances — shared/free ←→ separate/careful
   if (lo("finances")) {
     pushBest(["finances"], "treats money as shared, a team thing");
     pushWorst(["finances"], "insists on total financial independence and keeping everything separate");
   }
-  if (hi("finances")) pushBest(["finances"], "values financial autonomy and independent decision-making");
-
-  // Humour
-  if (lo("humor")) {
-    pushBest(["humor"], "has an absurdist or dry sense of humour");
-    pushWorst(["humor"], "finds your kind of humour cold or hard to read");
+  if (hi("finances")) {
+    pushBest(["finances"], "values financial autonomy and careful decision-making");
+    pushWorst(["finances"], "spends freely and wants everything pooled without discussion");
   }
-  if (hi("humor")) pushBest(["humor"], "is reactive and playful, finds the funny in whatever's in front of them");
 
-  // Intimacy
+  // humor — overlap type, use actual combo labels
+  if (v.humor !== undefined) {
+    const HUMOR_LABELS = ["absurd", "dry", "playful", "dark", "physical"];
+    const humorStyles = pick2FromIndex(v.humor).map(i => HUMOR_LABELS[i]);
+    pushBest(["humor"], `has a ${humorStyles.join(" or ")} sense of humour`);
+    pushWorst(["humor"], "has a completely different comedic register with no overlap");
+  }
+
+  // intimacy — vulnerable ←→ quiet presence
   if (lo("intimacy")) {
     pushBest(["intimacy"], "wants to be fully known, vulnerability isn't scary to them");
     pushWorst(["intimacy"], "keeps emotional exposure to a minimum");
   }
   if (hi("intimacy")) pushBest(["intimacy"], "feels closest through quiet presence and acceptance rather than intense disclosure");
 
-  // Love language
+  // lovelang — overlap type, use actual labels
   if (v.lovelang !== undefined) {
-    const langs = lovelangFromIndex(v.lovelang).map(i => LOVELANG_LABELS[i]);
+    const langs = pick2FromIndex(v.lovelang).map(i => LOVELANG_LABELS[i]);
     if (langs.length) {
       pushBest(["lovelang"], `shows care through ${langs.join(" and ").toLowerCase()}`);
       pushWorst(["lovelang"], "shows care in ways that don't register as care to you");
     }
   }
 
-  // Passion
+  // admire — generous ←→ critical
+  if (lo("admire")) {
+    pushBest(["admire"], "extends generosity and gives people the benefit of the doubt by default");
+    pushWorst(["admire"], "defaults to a critical read of people, especially under stress");
+  }
+  if (hi("admire")) {
+    pushBest(["admire"], "sees people clearly and doesn't dress things up");
+    pushWorst(["admire"], "extends unconditional warmth even when it isn't warranted");
+  }
+
+  // passion — passion-led ←→ connection-led
   if (lo("passion")) {
     pushBest(["passion"], "places physical chemistry and romantic intensity near the centre of the relationship");
     pushWorst(["passion"], "treats passion as a nice bonus rather than essential");
   }
   if (hi("passion")) pushBest(["passion"], "builds connection through consistency and warmth rather than intensity");
 
-  // Rhythm
+  // rhythm — frequent ←→ organic
   if (lo("rhythm")) {
     pushBest(["rhythm"], "checks in often and stays close even in the small moments");
     pushWorst(["rhythm"], "disappears for days without thinking anything of it");
@@ -397,28 +473,30 @@ function fitLines(v) {
     pushWorst(["rhythm"], "needs daily check-ins to feel secure");
   }
 
-  // Stability
+  // stability — steady ←→ reactive
   if (lo("stability")) {
     pushBest(["stability"], "is emotionally steady, a reliable baseline when things get hard");
     pushWorst(["stability"], "is equally reactive, with no one anchoring the room");
   }
-  if (hi("stability")) pushBest(["stability"], "is emotionally expressive and sensitive");
-
-  // Values
-  if (lo("values")) {
-    pushBest(["values"], "is reliable, consistent, and shows up when it counts");
-    pushWorst(["values"], "treats commitment as optional and values keeping things loose");
+  if (hi("stability")) {
+    pushBest(["stability"], "is emotionally expressive and feels things deeply");
+    pushWorst(["stability"], "needs everything to be calm and reads any emotional intensity as a problem");
   }
-  if (hi("values")) pushBest(["values"], "prioritises ease and low-pressure connection over obligation");
 
-  // Admire
-  if (lo("admire")) {
-    pushBest(["admire"], "extends generosity and gives people the benefit of the doubt");
-    pushWorst(["admire"], "defaults to a critical read of people, especially under stress");
+  // values — exact type, check specific values
+  const valLabels = ["shows up reliably, especially when it's hard",
+                     "gives people space to be themselves without making it a project",
+                     "pushes toward growth and wants to be pushed back",
+                     "keeps things easy and low-pressure, no obligation for its own sake"];
+  if (v.values !== undefined) {
+    pushBest(["values"], valLabels[v.values]);
+    if (v.values === 0) pushWorst(["values"], "treats commitment as optional and values keeping things loose");
+    if (v.values === 1) pushWorst(["values"], "is in your business constantly and makes everything a project");
+    if (v.values === 2) pushWorst(["values"], "has no interest in growing or being challenged");
+    if (v.values === 3) pushWorst(["values"], "makes everything feel like a commitment and never just lets things be easy");
   }
-  if (hi("admire")) pushBest(["admire"], "calls things as they are and doesn't soften the truth");
 
-  // Worldview
+  // worldview — faith-led ←→ secular
   if (lo("worldview")) {
     pushBest(["worldview"], "shares a faith-grounded framework for meaning");
     pushWorst(["worldview"], "has no interest in or patience for faith as part of life");
@@ -428,32 +506,59 @@ function fitLines(v) {
     pushWorst(["worldview"], "expects faith to structure daily life and major decisions");
   }
 
-  // Space
+  // space — ordered ←→ relaxed
   if (lo("space")) {
-    pushBest(["space"], "treats home as an ordered, calm space");
-    pushWorst(["space"], "lives in permanent chaos and doesn't see why it matters");
+    pushBest(["space"], "treats shared space as ordered and calm");
+    pushWorst(["space"], "lives in permanent clutter and doesn't see why it matters");
   }
-  if (hi("space")) pushBest(["space"], "is relaxed about tidiness, home is lived-in");
+  if (hi("space")) {
+    pushBest(["space"], "is relaxed about tidiness, home is lived-in");
+    pushWorst(["space"], "needs the house spotless and feels anxious when it isn't");
+  }
 
-  // Drive
+  // drive — achievement-driven ←→ lifestyle-led
   if (lo("drive")) {
     pushBest(["drive"], "is ambitious and career-oriented");
-    pushWorst(["drive"], "treats work as just a means to an end and is cautious with money");
+    pushWorst(["drive"], "treats work as a means to an end and has no real ambition");
   }
   if (hi("drive")) {
-    pushBest(["drive"], "is lifestyle-led and financially cautious");
-    pushWorst(["drive"], "is defined by ambition and spends freely without thinking");
+    pushBest(["drive"], "is lifestyle-led and doesn't let work take over");
+    pushWorst(["drive"], "is defined by their ambition and has little patience for people who aren't");
   }
 
-  // Attachment
-  if (lo("attach")) pushBest(["attach"], "forms bonds openly and gradually, secure by default");
-  if (hi("attach")) {
-    pushBest(["attach"], "takes their time to attach, no pressure, no rushing it");
+  // attach — secure ←→ avoidant
+  if (lo("attach")) {
+    pushBest(["attach"], "is secure in relationships, doesn't need a lot of reassurance or space");
     pushWorst(["attach"], "bonds fast and reads any distance as rejection");
   }
+  if (hi("attach")) {
+    pushBest(["attach"], "takes their time to attach, no pressure, no rushing it");
+    pushWorst(["attach"], "is very anxious in relationships and needs constant reassurance");
+  }
 
-  const sort = arr => arr.sort((a, b) => b.w - a.w).slice(0, 7).map(x => x.text);
+  const sort = arr => arr.sort((a, b) => b.w - a.w).map(x => x.text);
   return { best: sort(best), worst: sort(worst) };
+}
+
+function growthLines(v) {
+  const lines = [];
+
+  // Check each GROWTH_VECTORS dim — if someone is "stretched", surface a line about it
+  const stretched = [
+    ["conflict",   v => v.conflict   !== undefined && v.conflict   >= 2,   "You tend to avoid conflict rather than address it directly. Someone who stays calm and names things without making it an attack can shift what feels possible."],
+    ["empathy",    v => v.empathy    !== undefined && v.empathy    >= 2,   "You reach for practical solutions when someone's struggling rather than just being present. Someone who sits with things can expand that instinct."],
+    ["auth",       v => v.auth       !== undefined && v.auth       >= 2,   "You take a long time to lower your guard. Being close to someone who is genuinely open — not as a performance — tends to make that easier over time."],
+    ["boundaries", v => v.boundaries !== undefined && v.boundaries >= 2,   "You absorb a lot before naming limits. Someone who sets boundaries without drama can make it easier to do the same."],
+    ["attach",     v => v.attach     !== undefined && v.attach     >= 1.5, "You carry some anxiety or distance in relationships. A secure presence — consistent, not punishing — is one of the few things that actually shifts attachment patterns."],
+    ["stability",  v => v.stability  !== undefined && v.stability  >= 2,   "You run reactive and feel things intensely. Being regularly around someone who doesn't escalate can quietly expand what regulated feels like from the inside."],
+    ["differ",     v => v.differ     !== undefined && v.differ     <= 0.8, "You lean toward merger in relationships. Someone who holds their own identity without needing distance can show that closeness and selfhood aren't in conflict."],
+  ];
+
+  stretched.forEach(([, isStretched, text]) => {
+    if (isStretched(v)) lines.push(text);
+  });
+
+  return lines;
 }
 
 function renderFitSummary() {
@@ -462,28 +567,27 @@ function renderFitSummary() {
   if (!state.myVector) return;
 
   const { best, worst } = fitLines(state.myVector);
-  if (!best.length && !worst.length) return;
+  const growth = growthLines(state.myVector);
 
-  if (!best.length && !worst.length) {
-    container.innerHTML = `<div class="fit-section"><p class="fit-balanced">You sit close to the middle on most dimensions. You're likely to get along with a wide range of personalities - it can just take longer to find out where the real points of connection are.</p></div>`;
-    return;
-  }
-
-  const bestHtml = best.map(l => `<li>${l}</li>`).join("");
-  const worstHtml = worst.map(l => `<li>${l}</li>`).join("");
+  if (!best.length && !worst.length && !growth.length) return;
 
   const bestBlock = best.length ? `
       <div class="fit-block fit-best">
         <div class="fit-heading">Likely to feel easy if they…</div>
-        <ul class="fit-list">${bestHtml}</ul>
+        <ul class="fit-list">${best.map(l => `<li>${l}</li>`).join("")}</ul>
       </div>` : "";
   const worstBlock = worst.length ? `
       <div class="fit-block fit-worst">
         <div class="fit-heading">More friction likely if they…</div>
-        <ul class="fit-list">${worstHtml}</ul>
+        <ul class="fit-list">${worst.map(l => `<li>${l}</li>`).join("")}</ul>
+      </div>` : "";
+  const growthBlock = growth.length ? `
+      <div class="fit-block fit-growth">
+        <div class="fit-heading">Where the right person could help you grow</div>
+        <ul class="fit-list">${growth.map(l => `<li>${l}</li>`).join("")}</ul>
       </div>` : "";
 
-  container.innerHTML = `<div class="fit-section">${bestBlock}${worstBlock}</div>`;
+  container.innerHTML = `<div class="fit-section">${bestBlock}${worstBlock}${growthBlock}</div>`;
 }
 
 function showProfile() {
@@ -523,8 +627,8 @@ function compareWithCode(code) {
   renderResult(state.myVector, v2);
 }
 
-const FRIENDSHIP_DIMS = new Set(["comm","conflict","energy","rhythm","empathy","humor","boundaries","stability","values","depth","auth"]);
-const RELATIONSHIP_DIMS = new Set(["comm","conflict","energy","rhythm","empathy","humor","boundaries","stability","values","depth","auth","attach","intimacy","direction","lovelang","cconf","passion","differ","drive","worldview","space","admire","finances"]);
+const FRIENDSHIP_DIMS = new Set(["comm","conflict","energy","rhythm","empathy","humor","boundaries","stability","values","depth","auth","admire","direction","worldview"]);
+const RELATIONSHIP_DIMS = new Set(["comm","conflict","energy","rhythm","empathy","humor","boundaries","stability","values","depth","auth","admire","direction","worldview","attach","intimacy","lovelang","cconf","passion","differ","drive","space","finances","direction_children","roles","lifestyle"]);
 
 function renderDimCards(dims, sharedDims, v1, v2, containerId) {
   const el = document.getElementById(containerId);
@@ -534,8 +638,9 @@ function renderDimCards(dims, sharedDims, v1, v2, containerId) {
     const s = Math.round(dims[d] * 100);
     const color = s >= 65 ? "bar-hi" : s >= 40 ? "bar-mid" : "bar-lo";
     let ins = DIM_INSIGHTS[d] ? DIM_INSIGHTS[d](v1[d], v2[d], dims[d]) : null;
-    if (ins && ins.type === "strength" && dims[d] < 0.5) ins = { type: "diff", text: ins.text };
-    const insHtml = ins ? `<div class="dim-insight ${ins.type}">${ins.text}</div>` : "";
+    if (ins && ins.type === "strength" && dims[d] < 0.5) ins = { type: "diff", text: ins.text, growth: ins.growth };
+    const growthHtml = ins && ins.growth ? `<div class="dim-insight growth"><span class="growth-label">Growth</span>${ins.growth}</div>` : "";
+    const insHtml = ins ? `<div class="dim-insight ${ins.type}"><span class="dynamic-label">Dynamic</span>${ins.text}</div>${growthHtml}` : "";
     el.innerHTML += `
       <div class="dim-card">
         <div class="dim-card-header">
@@ -550,14 +655,14 @@ function renderDimCards(dims, sharedDims, v1, v2, containerId) {
   });
 }
 
-const tabScores = { friendship: null, relationship: null };
+const tabScores = { friendship: null, relationship: null, growth: null };
 
-function animateRing(pct) {
+function animateRing(id, pct) {
   const circumference = 326.7;
   const offset = circumference - (pct / 100) * circumference;
-  const ring = document.getElementById("ring-fg");
+  const ring = document.getElementById(id);
   ring.style.strokeDashoffset = offset;
-  ring.style.stroke = pct >= 65 ? "#c8b89a"
+  ring.style.stroke = pct >= 76 ? "#c8b89a"
                     : pct >= 40 ? "rgba(200,184,154,0.5)"
                     : "rgba(200,184,154,0.25)";
 }
@@ -572,11 +677,22 @@ function switchTab(tab) {
   if (pct !== null) {
     document.getElementById("r-pct").textContent = pct + "%";
     document.getElementById("r-lbl").textContent = scoreLabel(pct);
-    setTimeout(() => animateRing(pct), 100);
+    setTimeout(() => animateRing("ring-fg", pct), 100);
   } else {
     document.getElementById("r-pct").textContent = "—";
     document.getElementById("r-lbl").textContent = "";
-    setTimeout(() => animateRing(0), 100);
+    setTimeout(() => animateRing("ring-fg", 0), 100);
+  }
+
+  const growth = tabScores.growth;
+  if (growth !== null) {
+    document.getElementById("r-growth-pct").textContent = growth.score + "%";
+    document.getElementById("r-growth-lbl").textContent = growth.label;
+    setTimeout(() => animateRing("ring-growth-fg", growth.score), 100);
+  } else {
+    document.getElementById("r-growth-pct").textContent = "—";
+    document.getElementById("r-growth-lbl").textContent = "";
+    setTimeout(() => animateRing("ring-growth-fg", 0), 100);
   }
 }
 
@@ -586,6 +702,8 @@ function renderResult(v1, v2) {
 
   showScreen("screen-result");
 
+  tabScores.growth = result.growth;
+
   // Friendship dims + score
   const friendshipDims = result.sharedDims.filter(d => FRIENDSHIP_DIMS.has(d));
   tabScores.friendship = friendshipDims.length
@@ -594,14 +712,19 @@ function renderResult(v1, v2) {
   renderDimCards(result.dims, friendshipDims, v1, v2, "r-dims-friendship");
 
   const allCombos = COMBO_INSIGHTS.map(fn => fn(v1, v2)).filter(Boolean);
+  const growthCombos = result.growth.combos || [];
   const friendshipCombos = allCombos.filter(ins => ins.tab === "friendship");
   const friendshipInsightsEl = document.getElementById("r-insights-friendship");
+  let friendshipHtml = "";
   if (friendshipCombos.length) {
-    friendshipInsightsEl.innerHTML = `<div class="combo-header">Also worth knowing</div>` +
+    friendshipHtml += `<div class="combo-header">Also worth knowing</div>` +
       friendshipCombos.map(ins => `<div class="insight ${ins.type}">${ins.text}</div>`).join("");
-  } else {
-    friendshipInsightsEl.innerHTML = "";
   }
+  if (growthCombos.length) {
+    friendshipHtml += `<div class="combo-header">Growth potential</div>` +
+      growthCombos.map(c => `<div class="insight growth-combo">${c.text}</div>`).join("");
+  }
+  friendshipInsightsEl.innerHTML = friendshipHtml;
 
   // Relationship dims + score — only count dims exclusive to dating questions
   const relOnlyDims = [...RELATIONSHIP_DIMS].filter(d => !FRIENDSHIP_DIMS.has(d));
@@ -619,13 +742,16 @@ function renderResult(v1, v2) {
     rInsightsEl.innerHTML = `<p class="tab-empty">One of you didn't complete this section - relationship compatibility can't be calculated.</p>`;
   } else {
     renderDimCards(result.dims, relationshipDims, v1, v2, "r-dims-relationship");
-    const relationshipCombos = allCombos;
-    if (relationshipCombos.length) {
-      rInsightsEl.innerHTML = `<div class="combo-header">Also worth knowing</div>` +
-        relationshipCombos.map(ins => `<div class="insight ${ins.type}">${ins.text}</div>`).join("");
-    } else {
-      rInsightsEl.innerHTML = "";
+    let relationshipHtml = "";
+    if (allCombos.length) {
+      relationshipHtml += `<div class="combo-header">Also worth knowing</div>` +
+        allCombos.map(ins => `<div class="insight ${ins.type}">${ins.text}</div>`).join("");
     }
+    if (growthCombos.length) {
+      relationshipHtml += `<div class="combo-header">Growth potential</div>` +
+        growthCombos.map(c => `<div class="insight growth-combo">${c.text}</div>`).join("");
+    }
+    rInsightsEl.innerHTML = relationshipHtml;
   }
 
   switchTab("friendship");
@@ -654,6 +780,7 @@ function closePrivacy(e) {
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 (function init() {
+  migrateStorage();
   const params = new URLSearchParams(location.search);
   const compareCode = params.get("compare");
   const meCode = params.get("me");
@@ -674,7 +801,13 @@ function closePrivacy(e) {
     if (vec) {
       state.myCode = meCode;
       state.myVector = vec;
-      saveState();
+      // restore saved answers without overwriting them
+      const savedAnswers = localStorage.getItem("matchme_answers");
+      if (savedAnswers) state.answers = JSON.parse(savedAnswers);
+      const hadDating = localStorage.getItem("matchme_allQ_dating");
+      if (hadDating === "true") state.allQ = [...QUESTIONS_CORE, ...QUESTIONS_DATING];
+      localStorage.setItem("matchme_code", meCode);
+      localStorage.setItem("matchme_vector", JSON.stringify(vec));
       renderProfile();
       return;
     }
