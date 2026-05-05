@@ -594,11 +594,40 @@ html, body {
   color: var(--text2);
 }
 
+
 .pcat-boxes {
   display: flex;
   gap: 4px;
   width: 100%;
   padding-bottom: 18px;
+}
+
+.pcat-boxes-attach {
+  padding-bottom: 32px;
+}
+
+.pcat-box.pcat-attach {
+  background: var(--accent);
+}
+
+.pcat-attach-label {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.pcat-attach-pct {
+  position: absolute;
+  top: calc(100% + 18px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: var(--text2);
+  white-space: nowrap;
 }
 
 .pcat-box {
@@ -813,6 +842,80 @@ html, body {
 .rdim-pct {
   font-size: 11px;
   color: var(--text3);
+}
+
+.attach-profile-wrap {
+  display: flex;
+  gap: 16px;
+  padding: 8px 0 4px;
+}
+
+.attach-person {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.attach-patterns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0 2px;
+}
+
+.attach-pattern-label {
+  font-size: 12px;
+  color: var(--text2);
+  text-transform: capitalize;
+}
+
+.attach-pattern-sep {
+  color: var(--text3);
+  font-size: 11px;
+}
+
+.attach-title {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text3);
+  margin-bottom: 2px;
+}
+
+.attach-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text2);
+}
+
+.attach-row span:first-child {
+  width: 52px;
+  flex-shrink: 0;
+}
+
+.attach-row span:last-child {
+  width: 30px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.attach-mini-bg {
+  flex: 1;
+  height: 3px;
+  background: var(--border-hi);
+  border-radius: 2px;
+  position: relative;
+}
+
+.attach-mini-fill {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  background: var(--accent);
+  border-radius: 2px;
+  opacity: 0.6;
 }
 
 .dim-insight {

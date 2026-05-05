@@ -380,46 +380,95 @@ const QUESTIONS_CORE = [
 
 const QUESTIONS_DATING = [
 
-  // attach: response to insecurity in a relationship. 0=secure/direct, 3=disorganised (wants both space and reassurance).
-  // Axis: secure ←→ anxious/avoidant/disorganised
+  // attach: three-axis profile — secure, anxious, avoidant scored per answer via scores map.
+  // Q1: response when something feels off — probes secure (names it) vs anxious (seeks reassurance) vs avoidant (distances) vs disorganised (both)
   {
     section: "Attachment",
-    q: "When you feel insecure in a relationship, you usually...",
+    q: "When something feels off in a relationship, you usually...",
     opts: [
-      "Seek reassurance. I need to know it's okay",
-      "Withdraw a little until I process alone",
-      "Say directly that something doesn't feel right",
-      "I'm not sure what I need. Sometimes I want space, sometimes reassurance, and I can't always tell which"
+      "Try to say it directly, even if it feels a bit vulnerable",
+      "Need some reassurance to calm down",
+      "Take some distance and deal with it on your own first",
+      "Go back and forth — part of you wants closeness, part of you wants space"
     ],
-    dim: "attach", w: [2, 1, 0, 3]
+    scores: [
+      { attach_secure: 3, attach_anxious: 0, attach_avoidant: 0 },
+      { attach_secure: 0, attach_anxious: 3, attach_avoidant: 0 },
+      { attach_secure: 0, attach_anxious: 0, attach_avoidant: 3 },
+      { attach_secure: 0, attach_anxious: 2.5, attach_avoidant: 2.5 }
+    ]
   },
 
-  // attach: baseline feeling when a relationship is going well. 0=trust/secure, 3=keeps distance.
-  // Axis: secure/trusting ←→ avoidant/detached
+  // Q2: baseline when a relationship is going well — probes trust (secure) vs vigilance (anxious) vs detachment (avoidant) vs mixed
   {
     section: "Attachment",
-    q: "When a new relationship is going well, your underlying feeling is...",
+    q: "When a relationship is going well, you tend to...",
     opts: [
-      "Trust. I take it at face value and enjoy it",
-      "Good, though I'm aware it takes work to keep it that way",
-      "Grateful but not fully settled. Something in me stays watchful",
-      "Present but not dependent. I keep a part of myself separate"
+      "Relax into it and trust it",
+      "Still look for signs it might change",
+      "Enjoy it, but keep a part of yourself separate",
+      "Feel good, but not fully settled"
     ],
-    dim: "attach", w: [0, 1, 2, 3]
+    scores: [
+      { attach_secure: 3, attach_anxious: 0, attach_avoidant: 0 },
+      { attach_secure: 0, attach_anxious: 3, attach_avoidant: 0 },
+      { attach_secure: 0, attach_anxious: 0.5, attach_avoidant: 2.5 },
+      { attach_secure: 0.5, attach_anxious: 2, attach_avoidant: 1 }
+    ]
   },
 
-  // attach: jealousy / security when partner spends time with others. 0=secure, 3=needs reassurance.
-  // Axis: secure ←→ anxious
+  // Q3: jealousy / security — probes secure (unbothered) vs anxious (needs reassurance) vs avoidant (pulls back) vs disorganised
   {
     section: "Attachment",
-    q: "When someone you're with spends a lot of time with an ex or a close friend you don't know well, you...",
+    q: "If your partner shows interest in someone else, even casually, your reaction is closer to...",
     opts: [
-      "Feel secure. I trust the relationship",
-      "Notice a flicker of something but let it go",
-      "Feel unsettled, though I wouldn't necessarily say anything",
-      "Find it hard. I need some reassurance"
+      "I don't read much into it unless there's a clear reason",
+      "I feel it quickly and want some reassurance",
+      "I pull back a little and observe",
+      "It gets in my head, but I'm not always sure what to do with it"
     ],
-    dim: "attach", w: [0, 1, 2, 3]
+    scores: [
+      { attach_secure: 3, attach_anxious: 0, attach_avoidant: 0 },
+      { attach_secure: 0, attach_anxious: 3, attach_avoidant: 0 },
+      { attach_secure: 0, attach_anxious: 0.5, attach_avoidant: 2.5 },
+      { attach_secure: 0, attach_anxious: 2.5, attach_avoidant: 1.5 }
+    ]
+  },
+
+  // Q4: relying on someone emotionally — probes comfort with dependence (secure/anxious) vs discomfort (avoidant) vs ambivalence
+  {
+    section: "Attachment",
+    q: "Relying on someone emotionally feels...",
+    opts: [
+      "Natural, once I trust them",
+      "Important — it helps me feel stable",
+      "A bit uncomfortable, I'd rather handle things myself",
+      "Like something I want, but don't always feel safe doing"
+    ],
+    scores: [
+      { attach_secure: 3, attach_anxious: 0, attach_avoidant: 0 },
+      { attach_secure: 0.5, attach_anxious: 2.5, attach_avoidant: 0 },
+      { attach_secure: 0, attach_anxious: 0, attach_avoidant: 3 },
+      { attach_secure: 0, attach_anxious: 2, attach_avoidant: 2 }
+    ]
+  },
+
+  // Q5: when someone gets close — probes ease (secure) vs pulls in (anxious) vs needs space (avoidant) vs overwhelmed
+  {
+    section: "Attachment",
+    q: "When someone gets emotionally close to you, your reaction is more like...",
+    opts: [
+      "It feels natural, I don't think much about it",
+      "I lean into it and want to keep that closeness",
+      "I start needing a bit more space than before",
+      "I'm drawn in, but also a bit overwhelmed by it"
+    ],
+    scores: [
+      { attach_secure: 3, attach_anxious: 0, attach_avoidant: 0 },
+      { attach_secure: 0.5, attach_anxious: 2.5, attach_avoidant: 0 },
+      { attach_secure: 0, attach_anxious: 0, attach_avoidant: 3 },
+      { attach_secure: 0, attach_anxious: 2, attach_avoidant: 2.5 }
+    ]
   },
 
   // intimacy: what produces the feeling of closeness with a partner. 0=deep disclosure, 3=implicit/chosen.

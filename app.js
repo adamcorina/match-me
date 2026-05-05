@@ -10,7 +10,7 @@ const state = {
 };
 
 // ─── Storage versioning ───────────────────────────────────────────────────────
-const STORAGE_VERSION = "3";
+const STORAGE_VERSION = "4";
 
 function migrateStorage() {
   if (localStorage.getItem("matchme_version") !== STORAGE_VERSION) {
@@ -254,8 +254,33 @@ function renderProfile() {
   // Render dimension bars with pole labels
   const container = document.getElementById("profile-dims");
   container.innerHTML = "";
+
+  // Attachment profile block (replaces individual attach_* bars)
+  if (hasAttachmentProfile(state.myVector)) {
+    const { attach_secure: sec, attach_anxious: anx, attach_avoidant: avd } = state.myVector;
+    const attachBox = (label, val) => {
+      const pct = Math.round((val / 3) * 100);
+      const opacity = 0.15 + (val / 3) * 0.85;
+      return `
+        <div class="pcat-box pcat-attach" style="opacity:${opacity.toFixed(2)}">
+          <div class="pcat-attach-label">${label}</div>
+          <div class="pcat-attach-pct">${pct}%</div>
+        </div>`;
+    };
+    container.innerHTML += `
+      <div class="pdim-row">
+        <div class="pdim-label">Attachment</div>
+        <div class="pcat-boxes pcat-boxes-attach">
+          ${attachBox("Secure", sec)}
+          ${attachBox("Anxious", anx)}
+          ${attachBox("Avoidant", avd)}
+        </div>
+      </div>`;
+  }
+
   const dims = Object.keys(state.myVector);
   dims.forEach(d => {
+    if (ATTACH_DIMS.includes(d)) return; // rendered above as a group
     const meta = DIM_META[d];
     if (!meta) return;
     const val = state.myVector[d];
@@ -526,14 +551,21 @@ function fitLines(v) {
     pushWorst(["drive"], "is defined by their ambition and has little patience for people who aren't");
   }
 
-  // attach — secure ←→ avoidant
-  if (lo("attach")) {
-    pushBest(["attach"], "is secure in relationships, doesn't need a lot of reassurance or space");
-    pushWorst(["attach"], "bonds fast and reads any distance as rejection");
+  // attach — profile-based
+  const secHi  = v.attach_secure  !== undefined && v.attach_secure  >= 2;
+  const anxHi  = v.attach_anxious !== undefined && v.attach_anxious >= 2;
+  const avdHi  = v.attach_avoidant!== undefined && v.attach_avoidant>= 2;
+  if (secHi && !anxHi && !avdHi) {
+    pushBest(["attach_secure"], "is secure in relationships — doesn't need a lot of reassurance and doesn't run from closeness");
+    pushWorst(["attach_secure"], "is very anxious or avoidant in relationships");
   }
-  if (hi("attach")) {
-    pushBest(["attach"], "takes their time to attach, no pressure, no rushing it");
-    pushWorst(["attach"], "is very anxious in relationships and needs constant reassurance");
+  if (anxHi) {
+    pushBest(["attach_anxious"], "will reach for closeness and make their needs known");
+    pushWorst(["attach_anxious"], "is emotionally unavailable or pulls away when things get hard");
+  }
+  if (avdHi) {
+    pushBest(["attach_avoidant"], "values their own space and won't demand more closeness than you can give");
+    pushWorst(["attach_avoidant"], "smothers and leaves no room to breathe");
   }
 
   const sort = arr => arr.sort((a, b) => b.w - a.w).map(x => x.text);
@@ -545,18 +577,21 @@ function growthLines(v) {
 
   // Check each GROWTH_VECTORS dim — if someone is "stretched", surface a line about it
   const stretched = [
-    ["conflict",   v => v.conflict   !== undefined && v.conflict   >= 2,   "You tend to avoid conflict rather than address it directly. Someone who stays calm and names things without making it an attack can shift what feels possible."],
-    ["empathy",    v => v.empathy    !== undefined && v.empathy    >= 2,   "You reach for practical solutions when someone's struggling rather than just being present. Someone who sits with things can expand that instinct."],
-    ["auth",       v => v.auth       !== undefined && v.auth       >= 2,   "You take a long time to lower your guard. Being close to someone who is genuinely open — not as a performance — tends to make that easier over time."],
-    ["boundaries", v => v.boundaries !== undefined && v.boundaries >= 2,   "You absorb a lot before naming limits. Someone who sets boundaries without drama can make it easier to do the same."],
-    ["attach",     v => v.attach     !== undefined && v.attach     >= 1.5, "You carry some anxiety or distance in relationships. A secure presence — consistent, not punishing — is one of the few things that actually shifts attachment patterns."],
-    ["stability",  v => v.stability  !== undefined && v.stability  >= 2,   "You run reactive and feel things intensely. Being regularly around someone who doesn't escalate can quietly expand what regulated feels like from the inside."],
-    ["differ",     v => v.differ     !== undefined && v.differ     <= 0.8, "You lean toward merger in relationships. Someone who holds their own identity without needing distance can show that closeness and selfhood aren't in conflict."],
+    ["conflict",        d => v[d] !== undefined && v[d] >= 2,   v => v.conflict,        "You tend to avoid conflict rather than address it directly. Someone who stays calm and names things without making it an attack can shift what feels possible."],
+    ["empathy",         d => v[d] !== undefined && v[d] >= 2,   v => v.empathy,         "You reach for practical solutions when someone's struggling rather than just being present. Someone who sits with things can expand that instinct."],
+    ["auth",            d => v[d] !== undefined && v[d] >= 2,   v => v.auth,            "You take a long time to lower your guard. Being close to someone who is genuinely open — not as a performance — tends to make that easier over time."],
+    ["boundaries",      d => v[d] !== undefined && v[d] >= 2,   v => v.boundaries,      "You absorb a lot before naming limits. Someone who sets boundaries without drama can make it easier to do the same."],
+    ["attach_anxious",  d => v[d] !== undefined && v[d] >= 2,   v => v.attach_anxious,  "You carry anxiety into relationships — looking for signs, needing reassurance. A secure presence — consistent, not punishing — is one of the few things that actually shifts that pattern."],
+    ["attach_avoidant", d => v[d] !== undefined && v[d] >= 2,   v => v.attach_avoidant, "You protect yourself with distance when things get close. Someone who is genuinely secure — not threatened by your space needs — can make it safer to stay present."],
+    ["stability",       d => v[d] !== undefined && v[d] >= 2,   v => v.stability,       "You run reactive and feel things intensely. Being regularly around someone who doesn't escalate can quietly expand what regulated feels like from the inside."],
+    ["differ",          d => v[d] !== undefined && v[d] <= 0.8, v => 3 - v.differ,      "You lean toward merger in relationships. Someone who holds their own identity without needing distance can show that closeness and selfhood aren't in conflict."],
   ];
 
-  stretched.forEach(([, isStretched, text]) => {
-    if (isStretched(v)) lines.push(text);
-  });
+  stretched
+    .filter(([dim, isStretched]) => isStretched(dim))
+    .sort((a, b) => b[2](v) - a[2](v))
+    .slice(0, 3)
+    .forEach(([,, , text]) => lines.push(text));
 
   return lines;
 }
@@ -628,7 +663,16 @@ function compareWithCode(code) {
 }
 
 const FRIENDSHIP_DIMS = new Set(["comm","conflict","energy","rhythm","empathy","humor","boundaries","stability","values","depth","auth","admire","direction","worldview"]);
-const RELATIONSHIP_DIMS = new Set(["comm","conflict","energy","rhythm","empathy","humor","boundaries","stability","values","depth","auth","admire","direction","worldview","attach","intimacy","lovelang","cconf","passion","differ","drive","space","finances","direction_children","roles","lifestyle"]);
+const RELATIONSHIP_DIMS = new Set(["comm","conflict","energy","rhythm","empathy","humor","boundaries","stability","values","depth","auth","admire","direction","worldview","attach_profile","intimacy","lovelang","cconf","passion","differ","drive","space","finances","direction_children","roles","lifestyle"]);
+
+function attachPersonBars(v) {
+  if (!hasAttachmentProfile(v)) return "";
+  const row = (label, val) => {
+    const pct = Math.round((val / 3) * 100);
+    return `<div class="attach-row"><span>${label}</span><div class="attach-mini-bg"><div class="attach-mini-fill" style="width:${pct}%"></div></div><span>${pct}%</span></div>`;
+  };
+  return row("Secure", v.attach_secure) + row("Anxious", v.attach_anxious) + row("Avoidant", v.attach_avoidant);
+}
 
 function renderDimCards(dims, sharedDims, v1, v2, containerId) {
   const el = document.getElementById(containerId);
@@ -637,6 +681,22 @@ function renderDimCards(dims, sharedDims, v1, v2, containerId) {
   sorted.forEach(d => {
     const s = Math.round(dims[d] * 100);
     const color = s >= 65 ? "bar-hi" : s >= 40 ? "bar-mid" : "bar-lo";
+
+    if (d === "attach_profile") {
+      const ins = attachmentInsight(v1, v2);
+      const insHtml = ins ? `<div class="dim-insight ${ins.type}"><span class="dynamic-label">Dynamic</span>${ins.text}</div>` : "";
+      el.innerHTML += `
+        <div class="dim-card">
+          <div class="dim-card-header">
+            <div class="rdim-label">Attachment</div>
+            <div class="rdim-pct">${s}%</div>
+          </div>
+          <div class="rdim-bar-bg"><div class="rdim-bar-fill ${color}" style="width:${s}%"></div></div>
+          ${insHtml}
+        </div>`;
+      return;
+    }
+
     let ins = DIM_INSIGHTS[d] ? DIM_INSIGHTS[d](v1[d], v2[d], dims[d]) : null;
     if (ins && ins.type === "strength" && dims[d] < 0.5) ins = { type: "diff", text: ins.text, growth: ins.growth };
     const growthHtml = ins && ins.growth ? `<div class="dim-insight growth"><span class="growth-label">Growth</span>${ins.growth}</div>` : "";

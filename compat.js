@@ -19,8 +19,10 @@ const DIM_META = {
   humor:          { label: "Humour",           type: "overlap", cats: ["Absurd", "Dry", "Playful", "Dark", "Physical"] },
   // Schnarch: differentiation – naming limits without fusion or distance; Tatkin: secure functioning
   boundaries:     { label: "Boundaries",       type: "sim",   lo: "Direct",           hi: "Absorbs quietly" },
-  // Bowlby / Hazan & Shaver / Johnson: secure, anxious, avoidant patterns; zone catches both extremes
-  attach:         { label: "Attachment",       type: "sim",   display: "category", cats: ["Secure", "Anxious", "Avoidant", "Disorganised"] },
+  // Bowlby / Hazan & Shaver / Johnson: three-axis attachment profile scored independently
+  attach_secure:  { label: "Secure",   type: "sim", lo: "Low",  hi: "High" },
+  attach_anxious: { label: "Anxious",  type: "sim", lo: "Low",  hi: "High" },
+  attach_avoidant:{ label: "Avoidant", type: "sim", lo: "Low",  hi: "High" },
   // Sternberg: intimacy vertex; Schnarch: self-validated vs. other-validated closeness needs
   intimacy:       { label: "Intimacy",         type: "sim",   lo: "Vulnerable",       hi: "Quiet presence"  },
   // Life-stage alignment research: children, geography, lifestyle – misalignment is a slow-burn incompatibility
@@ -742,6 +744,30 @@ const COMBO_INSIGHTS = [
 
   // Both avoid in friendship context AND let things go in relationship context:
   // silent accumulation pattern — nothing escalates but nothing resolves either.
+  // Conflict-avoidant + anxious attachment: wants closeness but under tension goes quiet instead of asking
+  function conflictAvoidantAnxious(v1, v2) {
+    if (v1.conflict === undefined || v2.conflict === undefined) return null;
+    if (v1.attach_anxious === undefined || v2.attach_anxious === undefined) return null;
+    const avoidsConflict = v => v.conflict >= 2;
+    const anxious = v => v.attach_anxious >= 2;
+    if ((avoidsConflict(v1) && anxious(v1)) || (avoidsConflict(v2) && anxious(v2))) {
+      return { tab: "relationship", type: "diff", text: "At least one of you wants reassurance and closeness when something feels off, but avoids raising it directly. The need is connection; the move is silence. From the outside that reads as withdrawal, not as a bid for closeness — which is what it actually is." };
+    }
+    return null;
+  },
+
+  // Conflict-avoidant + avoidant attachment: discomfort compounds — neither raises it, neither reaches
+  function conflictAvoidantAttachAvoidant(v1, v2) {
+    if (v1.conflict === undefined || v2.conflict === undefined) return null;
+    if (v1.attach_avoidant === undefined || v2.attach_avoidant === undefined) return null;
+    const avoidsConflict = v => v.conflict >= 2;
+    const attachAvoidant = v => v.attach_avoidant >= 2;
+    if ((avoidsConflict(v1) && attachAvoidant(v1)) || (avoidsConflict(v2) && attachAvoidant(v2))) {
+      return { tab: "relationship", type: "diff", text: "At least one of you both avoids conflict and protects themselves with distance when things get hard. Discomfort has nowhere to go — it doesn't get raised and it doesn't get closeness as a counterweight. It just accumulates quietly." };
+    }
+    return null;
+  },
+
   function conflictCconfBothAvoid(v1, v2) {
     if (v1.conflict === undefined || v2.conflict === undefined) return null;
     if (v1.cconf === undefined || v2.cconf === undefined) return null;
@@ -780,17 +806,18 @@ function scoreLabel(pct) {
 // Each entry: [dim, bothUnhealthy(a, b)]
 const UNHEALTHY_SAME = [
   // most damaging when shared
-  ["conflict",  (a, b) => a >= 2   && b >= 2,   0.4],
-  ["stability", (a, b) => a >= 2   && b >= 2,   0.4],
-  ["attach",    (a, b) => a >= 2   && b >= 2,   0.4],
-  ["cconf",     (a, b) => a >= 2   && b >= 2,   0.4],
+  ["conflict",       (a, b) => a >= 2   && b >= 2,   0.4],
+  ["stability",      (a, b) => a >= 2   && b >= 2,   0.4],
+  ["attach_anxious", (a, b) => a >= 2   && b >= 2,   0.4],
+  ["cconf",          (a, b) => a >= 2   && b >= 2,   0.4],
   // problematic when shared
-  ["boundaries",(a, b) => a >= 2   && b >= 2,   0.5],
-  ["auth",      (a, b) => a >= 2   && b >= 2,   0.5],
-  ["differ",    (a, b) => a <= 0.8 && b <= 0.8, 0.5],
+  ["attach_avoidant",(a, b) => a >= 2   && b >= 2,   0.5],
+  ["boundaries",     (a, b) => a >= 2   && b >= 2,   0.5],
+  ["auth",           (a, b) => a >= 2   && b >= 2,   0.5],
+  ["differ",         (a, b) => a <= 0.8 && b <= 0.8, 0.5],
   // worth flagging but less severe
-  ["admire",    (a, b) => a >= 2   && b >= 2,   0.7],
-  ["empathy",   (a, b) => a >= 2   && b >= 2,   0.7],
+  ["admire",         (a, b) => a >= 2   && b >= 2,   0.7],
+  ["empathy",        (a, b) => a >= 2   && b >= 2,   0.7],
 ];
 
 const EXACT_SCORES = {
@@ -880,6 +907,19 @@ function buildVector(answers, questions) {
   const sums = {}, counts = {}, multi = {};
   questions.forEach((q, i) => {
     if (answers[i] === undefined) return;
+
+    // Multi-dim scoring (attachment profile questions)
+    if (q.scores) {
+      const scoreMap = q.scores[answers[i]];
+      if (!scoreMap) return;
+      Object.entries(scoreMap).forEach(([d, value]) => {
+        if (!sums[d]) { sums[d] = 0; counts[d] = 0; }
+        sums[d] += value;
+        counts[d]++;
+      });
+      return;
+    }
+
     const d = q.dim;
     const meta = DIM_META[d];
     if (q.multiSelect) {
@@ -913,7 +953,7 @@ function buildVector(answers, questions) {
  * Returns { overall, dims: { dim: score }, label, insights }
  */
 const DIM_WEIGHTS = {
-  attach:    3.0,
+  attach_profile: 3.0,
   conflict:  3.0,
   stability: 3.0,
   boundaries: 2.5,
@@ -936,7 +976,7 @@ const GROWTH_VECTORS = [
   ["empathy",   v => v.empathy   !== undefined && v.empathy   <= 0.8,  v => v.empathy   !== undefined && v.empathy   >= 2  ],
   ["auth",      v => v.auth      !== undefined && v.auth      <= 1,   v => v.auth      !== undefined && v.auth      >= 2  ],
   ["boundaries",v => v.boundaries!== undefined && v.boundaries<= 1,   v => v.boundaries!== undefined && v.boundaries>= 2  ],
-  ["attach",    v => v.attach    !== undefined && v.attach    <= 1,   v => v.attach    !== undefined && v.attach    >= 1.5],
+  ["attach_secure", v => v.attach_secure !== undefined && v.attach_secure >= 2,  v => v.attach_secure !== undefined && v.attach_secure <= 1],
   ["stability", v => v.stability !== undefined && v.stability <= 0.8,  v => v.stability !== undefined && v.stability >= 2  ],
   ["differ",    v => v.differ    !== undefined && v.differ    >= 2,   v => v.differ    !== undefined && v.differ    <= 0.8],
 ];
@@ -950,9 +990,9 @@ const GROWTH_COMBOS = [
   // Secure attachment + conflict avoidance: the secure person models that conflict doesn't
   // have to be dangerous AND that the relationship survives it. Neither dim alone captures this.
   function secureConflict(v1, v2) {
-    const secure   = v => v.attach   !== undefined && v.attach   <= 1;
-    const direct   = v => v.conflict !== undefined && v.conflict <= 1;
-    const avoidant = v => v.conflict !== undefined && v.conflict >= 2;
+    const secure   = v => v.attach_secure !== undefined && v.attach_secure >= 2;
+    const direct   = v => v.conflict      !== undefined && v.conflict      <= 1;
+    const avoidant = v => v.conflict      !== undefined && v.conflict      >= 2;
     const v1Models = secure(v1) && direct(v1) && avoidant(v2);
     const v2Models = secure(v2) && direct(v2) && avoidant(v1);
     if (v1Models || v2Models) {
@@ -994,10 +1034,10 @@ const GROWTH_COMBOS = [
   // Independent + merged, both secure: security on both sides turns what would otherwise
   // be friction into a genuine learning opportunity about what closeness can look like.
   function independentMergedSecure(v1, v2) {
-    const secureIndep  = v => v.attach !== undefined && v.differ !== undefined &&
-                              v.attach <= 1           && v.differ >= 2;
-    const secureMerged = v => v.attach !== undefined && v.differ !== undefined &&
-                              v.attach <= 1           && v.differ <= 0.8;
+    const secureIndep  = v => v.attach_secure !== undefined && v.differ !== undefined &&
+                              v.attach_secure >= 2           && v.differ >= 2;
+    const secureMerged = v => v.attach_secure !== undefined && v.differ !== undefined &&
+                              v.attach_secure >= 2           && v.differ <= 0.8;
     const v1Models = secureIndep(v1) && secureMerged(v2);
     const v2Models = secureIndep(v2) && secureMerged(v1);
     if (v1Models || v2Models) {
@@ -1009,32 +1049,25 @@ const GROWTH_COMBOS = [
 ];
 
 function calcGrowth(v1, v2) {
-  // Each dim contributes 0, 1, or 2 points out of a max of 2:
-  //   2 = clear growth vector both ways (one healthy, one stretched)
-  //   1 = one-way growth vector, OR both in healthy/mid range (functional baseline)
-  //   0 = both in unhealthy same zone (stagnant)
-  // Growth combos add 2 points + 2 possible when they fire.
   let points = 0;
   let possible = 0;
+  let anyStretched = false;
 
   GROWTH_VECTORS.forEach(([dim, healthy, stretched]) => {
     if (v1[dim] === undefined || v2[dim] === undefined) return;
-    possible += 2;
 
     const v1GrowsFromV2 = healthy(v2) && stretched(v1);
     const v2GrowsFromV1 = healthy(v1) && stretched(v2);
 
+    if (stretched(v1) || stretched(v2)) anyStretched = true;
+
+    if (!v1GrowsFromV2 && !v2GrowsFromV1) return;
+
+    possible += 2;
     if (v1GrowsFromV2 && v2GrowsFromV1) {
-      points += 2; // mutual growth
-    } else if (v1GrowsFromV2 || v2GrowsFromV1) {
-      points += 1; // one-way growth
+      points += 2;
     } else {
-      const bothUnhealthy = UNHEALTHY_SAME.find(([d]) => d === dim);
-      if (bothUnhealthy && bothUnhealthy[1](v1[dim], v2[dim])) {
-        points += 0; // both stuck in same unhealthy pattern
-      } else {
-        points += 1; // both functional/mid — stable baseline
-      }
+      points += 1;
     }
   });
 
@@ -1042,7 +1075,10 @@ function calcGrowth(v1, v2) {
   combos.forEach(() => { points += 2; possible += 2; });
 
   const score = possible === 0 ? 0 : Math.round(points / possible * 100);
-  return { score, label: growthLabel(score), combos };
+  const label = possible === 0
+    ? (anyStretched ? "Similar blind spots" : "Already solid ground")
+    : growthLabel(score);
+  return { score, label, combos };
 }
 
 function growthLabel(pct) {
@@ -1052,13 +1088,72 @@ function growthLabel(pct) {
        : "Similar blind spots";
 }
 
+const ATTACH_DIMS = ["attach_secure", "attach_anxious", "attach_avoidant"];
+
+function hasAttachmentProfile(v) {
+  return ATTACH_DIMS.every(d => v[d] !== undefined);
+}
+
+function attachmentScore(v1, v2) {
+  const distance = ATTACH_DIMS.reduce((s, d) => s + Math.abs(v1[d] - v2[d]), 0);
+  let score = 1 - distance / 9;
+  // both high-anxious: amplify each other's insecurity
+  if (v1.attach_anxious >= 2 && v2.attach_anxious >= 2) score *= 0.4;
+  // both high-avoidant: comfortable distance that never becomes real closeness
+  else if (v1.attach_avoidant >= 2 && v2.attach_avoidant >= 2) score *= 0.5;
+  // anxious+avoidant: classic push-pull
+  else if ((v1.attach_anxious >= 2 && v2.attach_avoidant >= 2) ||
+           (v2.attach_anxious >= 2 && v1.attach_avoidant >= 2)) score *= 0.75;
+  return Math.max(0, Math.min(1, score));
+}
+
+function attachmentPattern(v) {
+  if (!hasAttachmentProfile(v)) return null;
+  const { attach_secure: sec, attach_anxious: anx, attach_avoidant: avd } = v;
+  if (sec >= 2 && anx < 1.5 && avd < 1.5) return "mostly secure";
+  if (anx >= 2 && avd >= 2 && sec < 1.5)  return "pull-push";
+  if (anx >= 2 && avd < 2)                return "anxious-leaning";
+  if (avd >= 2 && anx < 2)                return "avoidant-leaning";
+  return "mixed";
+}
+
+function attachmentInsight(v1, v2) {
+  const p1 = attachmentPattern(v1);
+  const p2 = attachmentPattern(v2);
+  if (!p1 || !p2) return null;
+
+  const anxiousAvoidant =
+    (v1.attach_anxious >= 2 && v2.attach_avoidant >= 2) ||
+    (v2.attach_anxious >= 2 && v1.attach_avoidant >= 2);
+
+  if (anxiousAvoidant) {
+    return { type: "diff", text: "One of you tends to seek closeness when uncertain; the other protects themselves with distance. The more one reaches, the more the other retreats — and the more the other retreats, the more anxious the first becomes. This pattern needs naming, not just absorbing." };
+  }
+  if (p1 === "pull-push" || p2 === "pull-push") {
+    return { type: "diff", text: "At least one of you may want closeness but also feel overwhelmed by it. The need is connection, but the protective move can look like distance — which is hard to read from the outside and easy to misread as indifference." };
+  }
+  if (p1 === p2) {
+    return { type: "strength", text: `You have a similar attachment pattern: ${p1}. That makes each other's reactions easier to understand and less likely to be misread.` };
+  }
+  return { type: "diff", text: `Your attachment tendencies differ — one is ${p1}, the other is ${p2}. That doesn't make it wrong, but closeness and reassurance may not mean the same thing to both of you, and it helps to say that out loud.` };
+}
+
 function calcCompat(v1, v2) {
-  const sharedDims = Object.keys(v1).filter(d => d in v2);
+  let sharedDims = Object.keys(v1).filter(d => d in v2);
   if (!sharedDims.length) return null;
+
+  // Replace raw attach dims with a single attach_profile score
+  sharedDims = sharedDims.filter(d => !ATTACH_DIMS.includes(d));
+  const bothHaveAttach = hasAttachmentProfile(v1) && hasAttachmentProfile(v2);
+  if (bothHaveAttach) sharedDims.push("attach_profile");
 
   const dims = {};
   sharedDims.forEach(d => {
-    dims[d] = parseFloat(dimScore(d, v1[d], v2[d]).toFixed(3));
+    if (d === "attach_profile") {
+      dims[d] = parseFloat(attachmentScore(v1, v2).toFixed(3));
+    } else {
+      dims[d] = parseFloat(dimScore(d, v1[d], v2[d]).toFixed(3));
+    }
   });
 
   const totalWeight = sharedDims.reduce((s, d) => s + (DIM_WEIGHTS[d] || 1), 0);
@@ -1084,7 +1179,7 @@ function calcCompat(v1, v2) {
   return { overall: adjusted, dims, label, growth, insights, sharedDims, _v1: v1, _v2: v2 };
 }
 
-const DIM_ORDER = ["admire","attach","auth","boundaries","cconf","comm","conflict","depth","differ","direction","direction_children","drive","empathy","energy","finances","humor","intimacy","lifestyle","lovelang","passion","rhythm","roles","space","stability","values","worldview"];
+const DIM_ORDER = ["admire","attach_avoidant","attach_anxious","attach_secure","auth","boundaries","cconf","comm","conflict","depth","differ","direction","direction_children","drive","empathy","energy","finances","humor","intimacy","lifestyle","lovelang","passion","rhythm","roles","space","stability","values","worldview"];
 const CODE_CHARS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 function encodeVector(v) {
@@ -1103,8 +1198,9 @@ function decodeVector(code) {
     if (code[i] === "_") continue;
     const idx = CODE_CHARS.indexOf(code[i]);
     if (idx === -1) return null;
-    const meta = DIM_META[DIM_ORDER[i]];
-    v[DIM_ORDER[i]] = meta && (meta.type === "overlap" || meta.type === "exact") ? idx : idx / 10;
+    const dim = DIM_ORDER[i];
+    const meta = DIM_META[dim];
+    v[dim] = meta && (meta.type === "overlap" || meta.type === "exact") ? idx : idx / 10;
   }
   return v;
 }
