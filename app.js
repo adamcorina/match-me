@@ -553,14 +553,14 @@ function renderDimCards(dims, sharedDims, v1, v2, containerId) {
   });
 }
 
-const tabScores = { friendship: null, relationship: null, spark: null };
+const tabScores = { friendship: null, relationship: null, growth: null };
 
 function animateRing(id, pct) {
   const circumference = 326.7;
   const offset = circumference - (pct / 100) * circumference;
   const ring = document.getElementById(id);
   ring.style.strokeDashoffset = offset;
-  ring.style.stroke = pct >= 65 ? "#c8b89a"
+  ring.style.stroke = pct >= 76 ? "#c8b89a"
                     : pct >= 40 ? "rgba(200,184,154,0.5)"
                     : "rgba(200,184,154,0.25)";
 }
@@ -582,15 +582,15 @@ function switchTab(tab) {
     setTimeout(() => animateRing("ring-fg", 0), 100);
   }
 
-  const spark = tabScores.spark;
-  if (spark !== null) {
-    document.getElementById("r-spark-pct").textContent = spark.score + "%";
-    document.getElementById("r-spark-lbl").textContent = spark.label;
-    setTimeout(() => animateRing("ring-spark-fg", spark.score), 100);
+  const growth = tabScores.growth;
+  if (growth !== null) {
+    document.getElementById("r-growth-pct").textContent = growth.score + "%";
+    document.getElementById("r-growth-lbl").textContent = growth.label;
+    setTimeout(() => animateRing("ring-growth-fg", growth.score), 100);
   } else {
-    document.getElementById("r-spark-pct").textContent = "—";
-    document.getElementById("r-spark-lbl").textContent = "";
-    setTimeout(() => animateRing("ring-spark-fg", 0), 100);
+    document.getElementById("r-growth-pct").textContent = "—";
+    document.getElementById("r-growth-lbl").textContent = "";
+    setTimeout(() => animateRing("ring-growth-fg", 0), 100);
   }
 }
 
@@ -600,7 +600,7 @@ function renderResult(v1, v2) {
 
   showScreen("screen-result");
 
-  tabScores.spark = result.spark;
+  tabScores.growth = result.growth;
 
   // Friendship dims + score
   const friendshipDims = result.sharedDims.filter(d => FRIENDSHIP_DIMS.has(d));

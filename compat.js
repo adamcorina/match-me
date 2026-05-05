@@ -190,7 +190,7 @@ const DIM_INSIGHTS = {
   boundaries(a, b) {
     const ba = bucket(a), bb = bucket(b);
     if (ba === bb) {
-      if (ba === "low")  return { type: "strength", text: "You both name limits directly and early. There's little chance of slow-building resentment between you." };
+      if (ba === "low")  return { type: "strength", text: "You both name limits directly and early. Resentment doesn't get a foothold between you." };
       if (ba === "mid")  return { type: "strength", text: "You both signal needs without drama and expect the other to do the same. A stable, low-friction dynamic." };
       if (ba === "high") return { type: "strength", text: "Neither of you makes a point of naming limits out loud. Things feel smooth until they aren't – and when they aren't, neither of you will find it easy to say so." };
     }
@@ -715,14 +715,53 @@ const COMBO_INSIGHTS = [
     return null;
   },
 
+  function rolesValuesGap(v1, v2) {
+    if (v1.roles === undefined || v2.roles === undefined) return null;
+    if (v1.values === undefined || v2.values === undefined) return null;
+    const rolesFar  = Math.abs(v1.roles - v2.roles) >= 2;
+    const valuesDiff = v1.values !== v2.values;
+    if (rolesFar && valuesDiff) {
+      return { tab: "relationship", type: "diff", text: "You have different expectations around how a relationship is structured, and you're not measuring the relationship by the same things. These two tend to compound: when there's no shared framework for what matters, disagreements about roles don't resolve, they just repeat." };
+    }
+    return null;
+  },
+
+  function directionValuesGap(v1, v2) {
+    if (v1.direction === undefined || v2.direction === undefined) return null;
+    if (v1.values === undefined || v2.values === undefined) return null;
+    const directionFar = v1.direction !== v2.direction;
+    const valuesDiff   = v1.values !== v2.values;
+    if (directionFar && valuesDiff) {
+      return { tab: "relationship", type: "diff", text: "You're pulling in different directions and measuring the relationship by different things. Good on the individual dimensions — harder as a combination, because there's no shared anchor to return to when plans diverge." };
+    }
+    return null;
+  },
+
 ];
 
 function scoreLabel(pct) {
-  return pct >= 80 ? "Smooth sailing"
-       : pct >= 65 ? "A few rough edges"
-       : pct >= 45 ? "Noticeably different"
+  return pct >= 76 ? "Smooth sailing"
+       : pct >= 60 ? "A few rough edges"
+       : pct >= 40 ? "Noticeably different"
        : "High friction";
 }
+
+// Dims where both landing in the unhealthy zone should penalise the score.
+// Each entry: [dim, bothUnhealthy(a, b)]
+const UNHEALTHY_SAME = [
+  // most damaging when shared
+  ["conflict",  (a, b) => a >= 2   && b >= 2,   0.4],
+  ["stability", (a, b) => a >= 2   && b >= 2,   0.4],
+  ["attach",    (a, b) => a >= 2   && b >= 2,   0.4],
+  ["cconf",     (a, b) => a >= 2   && b >= 2,   0.4],
+  // problematic when shared
+  ["boundaries",(a, b) => a >= 2   && b >= 2,   0.5],
+  ["auth",      (a, b) => a >= 2   && b >= 2,   0.5],
+  ["differ",    (a, b) => a <= 0.8 && b <= 0.8, 0.5],
+  // worth flagging but less severe
+  ["admire",    (a, b) => a >= 2   && b >= 2,   0.7],
+  ["empathy",   (a, b) => a >= 2   && b >= 2,   0.7],
+];
 
 /**
  * Score a single dimension given two values (0–3 scale).
@@ -734,25 +773,33 @@ function dimScore(dim, a, b) {
   const diff = Math.abs(a - b);
   const scale = (meta && meta.max) || 3;
 
+  let score;
   switch (type) {
     case "sim":
-      return 1 - diff / scale;
+      score = 1 - diff / scale;
+      break;
 
     case "overlap": {
-      // Jaccard similarity on the two love language selections
       const s1 = new Set(pick2FromIndex(a));
       const s2 = new Set(pick2FromIndex(b));
       const intersection = [...s1].filter(x => s2.has(x)).length;
       const union = new Set([...s1, ...s2]).size;
-      return union === 0 ? 0 : intersection / union;
+      score = union === 0 ? 0 : intersection / union;
+      break;
     }
 
     case "exact":
-      return a === b ? 1 : 0;
+      score = a === b ? 1 : 0;
+      break;
 
     default:
-      return 1 - diff / 3;
+      score = 1 - diff / 3;
   }
+
+  const unhealthy = UNHEALTHY_SAME.find(([d]) => d === dim);
+  if (unhealthy && unhealthy[1](a, b)) score *= unhealthy[2];
+
+  return score;
 }
 
 // All possible selections for a 5-option pick-up-to-2 question, sorted for stable encoding.
@@ -812,23 +859,25 @@ function buildVector(answers, questions) {
  * Returns { overall, dims: { dim: score }, label, insights }
  */
 const DIM_WEIGHTS = {
-  attach:    1.5,
-  conflict:  1.5,
+  attach:    3.0,
+  conflict:  3.0,
+  stability: 3.0,
+  boundaries: 2.5,
+  auth:      2.0,
+  admire:    2.0,
   values:    1.5,
-  stability: 1.5,
-  comm:      1.25,
-  direction:          1.25,
+  roles:     1.5,
   direction_children: 2.0,
-  roles:              1.5,
+  comm:      1.25,
+  direction: 1.25,
   worldview: 1.25,
-  admire:    1.25,
   lifestyle: 1.0,
 };
 
 // Each entry: [dim, isHealthy(v), isStretched(v)]
 // isHealthy = the person modelling the growth behaviour
 // isStretched = the person who benefits from exposure to it
-const SPARK_VECTORS = [
+const GROWTH_VECTORS = [
   ["conflict",  v => v.conflict  !== undefined && v.conflict  <= 1,   v => v.conflict  !== undefined && v.conflict  >= 2  ],
   ["empathy",   v => v.empathy   !== undefined && v.empathy   <= 0.8,  v => v.empathy   !== undefined && v.empathy   >= 2  ],
   ["auth",      v => v.auth      !== undefined && v.auth      <= 1,   v => v.auth      !== undefined && v.auth      >= 2  ],
@@ -838,26 +887,44 @@ const SPARK_VECTORS = [
   ["differ",    v => v.differ    !== undefined && v.differ    >= 2,   v => v.differ    !== undefined && v.differ    <= 0.8],
 ];
 
-function calcSpark(v1, v2) {
-  let bothWays = 0, oneWay = 0;
-  const total = SPARK_VECTORS.length;
+function calcGrowth(v1, v2) {
+  // Each dim contributes 0, 1, or 2 points out of a max of 2:
+  //   2 = clear growth vector both ways (one healthy, one stretched)
+  //   1 = one-way growth vector, OR both in healthy/mid range (functional baseline)
+  //   0 = both in unhealthy same zone (stagnant)
+  let points = 0;
+  let possible = 0;
 
-  SPARK_VECTORS.forEach(([dim, healthy, stretched]) => {
+  GROWTH_VECTORS.forEach(([dim, healthy, stretched]) => {
     if (v1[dim] === undefined || v2[dim] === undefined) return;
+    possible += 2;
+
     const v1GrowsFromV2 = healthy(v2) && stretched(v1);
     const v2GrowsFromV1 = healthy(v1) && stretched(v2);
-    if (v1GrowsFromV2 && v2GrowsFromV1) bothWays++;
-    else if (v1GrowsFromV2 || v2GrowsFromV1) oneWay++;
+
+    if (v1GrowsFromV2 && v2GrowsFromV1) {
+      points += 2; // mutual growth
+    } else if (v1GrowsFromV2 || v2GrowsFromV1) {
+      points += 1; // one-way growth
+    } else {
+      const bothUnhealthy = UNHEALTHY_SAME.find(([d]) => d === dim);
+      if (bothUnhealthy && bothUnhealthy[1](v1[dim], v2[dim])) {
+        points += 0; // both stuck in same unhealthy pattern
+      } else {
+        points += 1; // both functional/mid — stable baseline
+      }
+    }
   });
 
-  const score = Math.round((bothWays * 2 + oneWay) / (total * 2) * 100);
-  return { score, label: sparkLabel(score) };
+  const score = possible === 0 ? 0 : Math.round(points / possible * 100);
+  return { score, label: growthLabel(score) };
 }
 
-function sparkLabel(pct) {
-  return pct >= 60 ? "A lot to learn from each other"
-       : pct >= 35 ? "Some complementary tension"
-       : "Similar ground";
+function growthLabel(pct) {
+  return pct >= 75 ? "A lot to learn from each other"
+       : pct >= 55 ? "Uneven ground"
+       : pct >= 35 ? "Stable ground"
+       : "Similar blind spots";
 }
 
 function calcCompat(v1, v2) {
@@ -874,10 +941,7 @@ function calcCompat(v1, v2) {
     sharedDims.reduce((s, d) => s + dims[d] * (DIM_WEIGHTS[d] || 1), 0) / totalWeight * 100
   );
 
-  const label = scoreLabel(overall);
-  const spark = calcSpark(v1, v2);
-
-  // Cross-dimension combo insights only (per-dim insights rendered inline with cards)
+  // Cross-dimension combo insights
   const insights = [];
   COMBO_INSIGHTS.forEach(fn => {
     const ins = fn(v1, v2);
@@ -885,7 +949,14 @@ function calcCompat(v1, v2) {
   });
   insights.sort((a, b) => (a.type === "strength" ? -1 : 1) - (b.type === "strength" ? -1 : 1));
 
-  return { overall, dims, label, spark, insights, sharedDims, _v1: v1, _v2: v2 };
+  // Penalise based on diff combos only — strength combos already show in dim scores
+  const comboNudge = insights.reduce((s, ins) => s + (ins.type === "diff" ? -3 : 0), 0);
+  const adjusted = Math.min(100, Math.max(0, overall + comboNudge));
+
+  const label = scoreLabel(adjusted);
+  const growth = calcGrowth(v1, v2);
+
+  return { overall: adjusted, dims, label, growth, insights, sharedDims, _v1: v1, _v2: v2 };
 }
 
 const DIM_ORDER = ["admire","attach","auth","boundaries","cconf","comm","conflict","depth","differ","direction","direction_children","drive","empathy","energy","finances","humor","intimacy","lifestyle","lovelang","passion","rhythm","roles","space","stability","values","worldview"];
