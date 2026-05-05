@@ -536,7 +536,7 @@ function fitLines(v) {
     pushWorst(["attach"], "is very anxious in relationships and needs constant reassurance");
   }
 
-  const sort = arr => arr.sort((a, b) => b.w - a.w).slice(0, 7).map(x => x.text);
+  const sort = arr => arr.sort((a, b) => b.w - a.w).map(x => x.text);
   return { best: sort(best), worst: sort(worst) };
 }
 
@@ -558,7 +558,7 @@ function growthLines(v) {
     if (isStretched(v)) lines.push(text);
   });
 
-  return lines.slice(0, 3);
+  return lines;
 }
 
 function renderFitSummary() {

@@ -220,7 +220,7 @@ const QUESTIONS_CORE = [
       "Go along with it, though I need the serious part addressed eventually",
       "Find it deflecting. Some moments need to be felt, not laughed off"
     ],
-    dim: "conflict", w: [0, 1, 2]
+    dim: "conflict", w: [2, 1, 0]
   },
 
   // boundaries: response to limit violations. 0=names it immediately, 3=absorbs silently.
@@ -316,7 +316,7 @@ const QUESTIONS_CORE = [
       "Try to understand what's happening before drawing conclusions",
       "Wonder if something is fundamentally off. The right ones shouldn't feel this hard"
     ],
-    dim: "conflict", w: [0, 1, 2]
+    dim: "conflict", w: [0, 1.5, 2.5]
   },
 
   // direction: life orientation / what someone is optimising for in the next few years.
