@@ -793,6 +793,27 @@ const UNHEALTHY_SAME = [
   ["empathy",   (a, b) => a >= 2   && b >= 2,   0.7],
 ];
 
+const EXACT_SCORES = {
+  values: [
+    [1.00, 0.65, 0.55, 0.45], // Reliability
+    [0.65, 1.00, 0.60, 0.70], // Respect
+    [0.55, 0.60, 1.00, 0.45], // Growth
+    [0.45, 0.70, 0.45, 1.00], // Ease
+  ],
+  direction: [
+    [1.00, 0.25, 0.65, 0.60], // Stability
+    [0.25, 1.00, 0.70, 0.55], // Freedom
+    [0.65, 0.70, 1.00, 0.60], // Growth
+    [0.60, 0.55, 0.60, 1.00], // Connection
+  ],
+  roles: [
+    [1.00, 0.75, 0.45, 0.15],
+    [0.75, 1.00, 0.65, 0.35],
+    [0.45, 0.65, 1.00, 0.55],
+    [0.15, 0.35, 0.55, 1.00],
+  ],
+};
+
 /**
  * Score a single dimension given two values (0–3 scale).
  * Returns 0–1.
@@ -819,7 +840,7 @@ function dimScore(dim, a, b) {
     }
 
     case "exact":
-      score = a === b ? 1 : 0;
+      score = EXACT_SCORES[dim]?.[a]?.[b] ?? (a === b ? 1 : 0);
       break;
 
     default:
