@@ -565,9 +565,12 @@ const COMBO_INSIGHTS = [
   },
 
   function lovelangEmpathy(v1, v2) {
-    const diff = Math.abs((v1.lovelang || 0) - (v2.lovelang || 0));
+    if (v1.lovelang === undefined || v2.lovelang === undefined) return null;
+    const s1 = new Set(pick2FromIndex(v1.lovelang));
+    const s2 = new Set(pick2FromIndex(v2.lovelang));
+    const overlap = [...s1].filter(x => s2.has(x)).length;
     const lowEmpathy = v => v.empathy !== undefined && v.empathy >= 2;
-    if (diff >= 1.5 && (lowEmpathy(v1) || lowEmpathy(v2))) {
+    if (overlap === 0 && (lowEmpathy(v1) || lowEmpathy(v2))) {
       return { tab: "relationship", type: "diff", text: "You speak different love languages, and at least one of you defaults to practical action over emotional attunement. Care is likely being given. It's just not being received in the form the other person recognises. Worth making it explicit." };
     }
     return null;
@@ -850,7 +853,10 @@ function buildVector(answers, questions) {
   });
   const v = {};
   for (const d in sums) v[d] = parseFloat((sums[d] / counts[d]).toFixed(3));
-  for (const d in multi) v[d] = pick2ToIndex(multi[d]);
+  for (const d in multi) {
+    const meta = DIM_META[d];
+    v[d] = meta && meta.type === "overlap" ? pick2ToIndex(multi[d]) : multi[d];
+  }
   return v;
 }
 
