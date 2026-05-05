@@ -810,11 +810,11 @@ function dimScore(dim, a, b) {
       break;
 
     case "overlap": {
-      const s1 = new Set(pick2FromIndex(a));
-      const s2 = new Set(pick2FromIndex(b));
-      const intersection = [...s1].filter(x => s2.has(x)).length;
-      const union = new Set([...s1, ...s2]).size;
-      score = union === 0 ? 0 : intersection / union;
+      const s1 = pick2FromIndex(a);
+      const s2 = pick2FromIndex(b);
+      const intersection = s1.filter(x => s2.includes(x)).length;
+      const maxPicked = Math.max(s1.length, s2.length);
+      score = maxPicked === 0 ? 0 : intersection / maxPicked;
       break;
     }
 
