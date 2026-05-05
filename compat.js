@@ -893,11 +893,79 @@ const GROWTH_VECTORS = [
   ["differ",    v => v.differ    !== undefined && v.differ    >= 2,   v => v.differ    !== undefined && v.differ    <= 0.8],
 ];
 
+// Cross-dim growth combos — patterns where the combination produces growth potential
+// beyond what individual dims capture. Each fires when one person models the healthy
+// end and the other is stretched, but the mechanism only works because of the second dim.
+// Returns { text } | null. Adds 2 points + 2 possible when it fires (same weight as a mutual growth dim).
+const GROWTH_COMBOS = [
+
+  // Secure attachment + conflict avoidance: the secure person models that conflict doesn't
+  // have to be dangerous AND that the relationship survives it. Neither dim alone captures this.
+  function secureConflict(v1, v2) {
+    const secure   = v => v.attach   !== undefined && v.attach   <= 1;
+    const direct   = v => v.conflict !== undefined && v.conflict <= 1;
+    const avoidant = v => v.conflict !== undefined && v.conflict >= 2;
+    const v1Models = secure(v1) && direct(v1) && avoidant(v2);
+    const v2Models = secure(v2) && direct(v2) && avoidant(v1);
+    if (v1Models || v2Models) {
+      return { text: "One person here is secure and doesn't avoid conflict. For someone who does avoid it, that combination — seeing that conflict doesn't end the relationship — is one of the few things that can actually shift the pattern. It only works if both people stay in it long enough for that to land." };
+    }
+    return null;
+  },
+
+  // Emotionally steady + open + reactive partner: steadiness alone doesn't help much,
+  // but steadiness combined with genuine openness creates a safe reference point that
+  // reactive people can actually use.
+  function steadyOpenReactive(v1, v2) {
+    const steadyOpen = v => v.stability !== undefined && v.auth      !== undefined &&
+                            v.stability <= 0.8         && v.auth      <= 1;
+    const reactive   = v => v.stability !== undefined && v.stability >= 2;
+    const v1Models = steadyOpen(v1) && reactive(v2);
+    const v2Models = steadyOpen(v2) && reactive(v1);
+    if (v1Models || v2Models) {
+      return { text: "One person is emotionally steady and genuinely open. For someone who runs more reactive, being close to that combination — not just calm, but calm and present — can quietly shift what regulated feels like from the inside. Not through being told to calm down. Through repeated exposure to what it looks like." };
+    }
+    return null;
+  },
+
+  // Depth-seeking + open person with a guarded depth-seeker: the open person creates
+  // the conditions for the guarded person to actually go where they want to go.
+  function openPullsGuardedDepth(v1, v2) {
+    const openDeep   = v => v.auth !== undefined && v.depth !== undefined &&
+                            v.auth <= 1           && v.depth <= 1;
+    const guardedDeep = v => v.auth !== undefined && v.depth !== undefined &&
+                             v.auth >= 2           && v.depth <= 1;
+    const v1Models = openDeep(v1) && guardedDeep(v2);
+    const v2Models = openDeep(v2) && guardedDeep(v1);
+    if (v1Models || v2Models) {
+      return { text: "One person wants real depth and is willing to go there openly. The other wants the same thing but takes a long time to lower their guard. The open person can create the conditions for the guarded one to actually go where they want to go — not by pushing, just by going first. That only works if the guarded person is genuinely pulled toward depth, which they are." };
+    }
+    return null;
+  },
+
+  // Independent + merged, both secure: security on both sides turns what would otherwise
+  // be friction into a genuine learning opportunity about what closeness can look like.
+  function independentMergedSecure(v1, v2) {
+    const secureIndep  = v => v.attach !== undefined && v.differ !== undefined &&
+                              v.attach <= 1           && v.differ >= 2;
+    const secureMerged = v => v.attach !== undefined && v.differ !== undefined &&
+                              v.attach <= 1           && v.differ <= 0.8;
+    const v1Models = secureIndep(v1) && secureMerged(v2);
+    const v2Models = secureIndep(v2) && secureMerged(v1);
+    if (v1Models || v2Models) {
+      return { text: "One person holds their independence inside the relationship without needing distance; the other leans toward togetherness. Both are secure. That combination means the independent person can show that closeness and selfhood aren't in conflict, and the merged person can show that togetherness doesn't have to feel suffocating. It only works because neither person is anxious about it." };
+    }
+    return null;
+  },
+
+];
+
 function calcGrowth(v1, v2) {
   // Each dim contributes 0, 1, or 2 points out of a max of 2:
   //   2 = clear growth vector both ways (one healthy, one stretched)
   //   1 = one-way growth vector, OR both in healthy/mid range (functional baseline)
   //   0 = both in unhealthy same zone (stagnant)
+  // Growth combos add 2 points + 2 possible when they fire.
   let points = 0;
   let possible = 0;
 
@@ -922,8 +990,11 @@ function calcGrowth(v1, v2) {
     }
   });
 
+  const combos = GROWTH_COMBOS.map(fn => fn(v1, v2)).filter(Boolean);
+  combos.forEach(() => { points += 2; possible += 2; });
+
   const score = possible === 0 ? 0 : Math.round(points / possible * 100);
-  return { score, label: growthLabel(score) };
+  return { score, label: growthLabel(score), combos };
 }
 
 function growthLabel(pct) {

@@ -610,14 +610,19 @@ function renderResult(v1, v2) {
   renderDimCards(result.dims, friendshipDims, v1, v2, "r-dims-friendship");
 
   const allCombos = COMBO_INSIGHTS.map(fn => fn(v1, v2)).filter(Boolean);
+  const growthCombos = result.growth.combos || [];
   const friendshipCombos = allCombos.filter(ins => ins.tab === "friendship");
   const friendshipInsightsEl = document.getElementById("r-insights-friendship");
+  let friendshipHtml = "";
   if (friendshipCombos.length) {
-    friendshipInsightsEl.innerHTML = `<div class="combo-header">Also worth knowing</div>` +
+    friendshipHtml += `<div class="combo-header">Also worth knowing</div>` +
       friendshipCombos.map(ins => `<div class="insight ${ins.type}">${ins.text}</div>`).join("");
-  } else {
-    friendshipInsightsEl.innerHTML = "";
   }
+  if (growthCombos.length) {
+    friendshipHtml += `<div class="combo-header">Growth potential</div>` +
+      growthCombos.map(c => `<div class="insight growth-combo">${c.text}</div>`).join("");
+  }
+  friendshipInsightsEl.innerHTML = friendshipHtml;
 
   // Relationship dims + score — only count dims exclusive to dating questions
   const relOnlyDims = [...RELATIONSHIP_DIMS].filter(d => !FRIENDSHIP_DIMS.has(d));
@@ -635,13 +640,16 @@ function renderResult(v1, v2) {
     rInsightsEl.innerHTML = `<p class="tab-empty">One of you didn't complete this section - relationship compatibility can't be calculated.</p>`;
   } else {
     renderDimCards(result.dims, relationshipDims, v1, v2, "r-dims-relationship");
-    const relationshipCombos = allCombos;
-    if (relationshipCombos.length) {
-      rInsightsEl.innerHTML = `<div class="combo-header">Also worth knowing</div>` +
-        relationshipCombos.map(ins => `<div class="insight ${ins.type}">${ins.text}</div>`).join("");
-    } else {
-      rInsightsEl.innerHTML = "";
+    let relationshipHtml = "";
+    if (allCombos.length) {
+      relationshipHtml += `<div class="combo-header">Also worth knowing</div>` +
+        allCombos.map(ins => `<div class="insight ${ins.type}">${ins.text}</div>`).join("");
     }
+    if (growthCombos.length) {
+      relationshipHtml += `<div class="combo-header">Growth potential</div>` +
+        growthCombos.map(c => `<div class="insight growth-combo">${c.text}</div>`).join("");
+    }
+    rInsightsEl.innerHTML = relationshipHtml;
   }
 
   switchTab("friendship");

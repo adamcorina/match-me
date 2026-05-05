@@ -862,6 +862,11 @@ html, body {
   background: rgba(200,184,154,0.03);
 }
 
+.insight.growth-combo {
+  border-color: rgba(180,210,180,0.5);
+  background: rgba(180,210,180,0.05);
+}
+
 /* ─── Footer ──────────────────────────────────────────────────── */
 .app-footer {
   display: flex;
