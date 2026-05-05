@@ -405,9 +405,9 @@ const QUESTIONS_DATING = [
     q: "When a relationship is going well, you tend to...",
     opts: [
       "Relax into it and trust it",
-      "Still look for signs it might change",
+      "Feel relieved, but stay a little alert — good things can shift",
       "Enjoy it, but keep a part of yourself separate",
-      "Feel good, but not fully settled"
+      "Feel the closeness and want it, but the more real it gets the harder it is to fully let it in"
     ],
     scores: [
       { attach_secure: 3, attach_anxious: 0, attach_avoidant: 0 },
@@ -423,8 +423,8 @@ const QUESTIONS_DATING = [
     q: "If your partner shows interest in someone else, even casually, your reaction is closer to...",
     opts: [
       "I don't read much into it unless there's a clear reason",
-      "I feel it quickly and want some reassurance",
-      "I pull back a little and observe",
+      "I feel it quickly and want some reassurance that I'm still the one they want",
+      "I go a little quiet and create some distance while I process it",
       "It gets in my head, but I'm not always sure what to do with it"
     ],
     scores: [
@@ -440,10 +440,10 @@ const QUESTIONS_DATING = [
     section: "Attachment",
     q: "Relying on someone emotionally feels...",
     opts: [
-      "Natural, once I trust them",
-      "Important — it helps me feel stable",
+      "Natural, once I trust them — I don't think twice about it",
+      "Important. Having someone to lean on makes me more stable, not less",
       "A bit uncomfortable, I'd rather handle things myself",
-      "Like something I want, but don't always feel safe doing"
+      "Like something I want, but the moment I actually do it I feel exposed"
     ],
     scores: [
       { attach_secure: 3, attach_anxious: 0, attach_avoidant: 0 },
@@ -458,8 +458,8 @@ const QUESTIONS_DATING = [
     section: "Attachment",
     q: "When someone gets emotionally close to you, your reaction is more like...",
     opts: [
-      "It feels natural, I don't think much about it",
-      "I lean into it and want to keep that closeness",
+      "It feels natural — I'm comfortable with it and don't overthink it",
+      "I lean into it. I want more of it, not less",
       "I start needing a bit more space than before",
       "I'm drawn in, but also a bit overwhelmed by it"
     ],
