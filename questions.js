@@ -185,16 +185,6 @@ const QUESTIONS_CORE = [
     dim: "boundaries", w: [0, 1, 2, 3]
   },
   {
-    section: "Independence",
-    q: "You've been spending a lot of time with someone you care about. After a few days, you...",
-    opts: [
-      "I start to feel the pull to decompress. Even if it's been great, I need time to myself to reset",
-      "Don't really notice. I'd happily keep going",
-      "Actually find it harder when it ends. Connection is what recharges me"
-    ],
-    dim: "differ", w: [2, 1, 0]
-  },
-  {
     section: "Emotional tone",
     q: "Someone you're close to doesn't reply for two days. You...",
     opts: [
@@ -236,6 +226,50 @@ const QUESTIONS_CORE = [
       "Doing as little as possible. Real rest means switching off completely"
     ],
     dim: "lifestyle", w: [0, 1, 2, 3]
+  },
+  {
+    section: "Direction",
+    q: "Thinking a few years ahead, what do you want?",
+    opts: [
+      "Stability. A place, a person, a good routine",
+      "Freedom. Flexibility to move and change",
+      "Growth. Projects, adventures, building something",
+      "Connection. Wherever the right people are, that's where I want to be"
+    ],
+    dim: "direction"
+  },
+  {
+    section: "Regard",
+    q: "When someone you care about does something frustrating, your first instinct is...",
+    opts: [
+      "They probably had a reason. I give the benefit of the doubt",
+      "I notice it but don't jump to conclusions",
+      "I take it at face value and feel the irritation",
+      "I tend to connect it to a pattern I've noticed before"
+    ],
+    dim: "admire", w: [0, 1, 2, 3]
+  },
+  {
+    section: "Regard",
+    q: "When you think about the people you're closest to, what's the dominant feeling?",
+    opts: [
+      "Genuine admiration. There's something about them I find remarkable",
+      "Warmth. I know them fully and like them anyway",
+      "Loyalty. I'm committed to them, though I see them clearly",
+      "Caution. I care, but I'm always a little aware of what they're capable of"
+    ],
+    dim: "admire", w: [0, 1, 2, 3]
+  },
+  {
+    section: "Worldview",
+    q: "Faith or spirituality in your life...",
+    opts: [
+      "Plays an active role. It shapes how I see things",
+      "Is something I think about, but loosely. More personal than institutional",
+      "Isn't really part of how I move through the world",
+      "I'm actively skeptical of it"
+    ],
+    dim: "worldview", w: [0, 1, 2, 3]
   },
 ];
 
@@ -294,17 +328,6 @@ const QUESTIONS_DATING = [
       "Going out, seeing people, coming home together. Energy shared, not just presence"
     ],
     dim: "intimacy", w: [0, 1, 2, 3]
-  },
-  {
-    section: "Direction",
-    q: "Thinking a few years ahead, what do you want?",
-    opts: [
-      "Stability. A place, a person, a good routine",
-      "Freedom. Flexibility to move and change",
-      "Growth. Projects, adventures, building something",
-      "Connection. Wherever the right people are, that's where I want to be"
-    ],
-    dim: "direction"
   },
   {
     section: "Direction",
@@ -375,6 +398,16 @@ const QUESTIONS_DATING = [
   },
   {
     section: "Independence",
+    q: "You've been spending a lot of time with a partner. After a few days, you...",
+    opts: [
+      "I start to feel the pull to decompress. Even if it's been great, I need time to myself to reset",
+      "Don't really notice. I'd happily keep going",
+      "Actually find it harder when it ends. Connection is what recharges me"
+    ],
+    dim: "differ", w: [2, 1, 0]
+  },
+  {
+    section: "Independence",
     q: "In a relationship, having your own separate life — friends, interests, time — is...",
     opts: [
       "Essential. I need it to stay myself",
@@ -402,17 +435,6 @@ const QUESTIONS_DATING = [
       "A means to an end. I want a good life, not a career"
     ],
     dim: "drive", w: [0, 1, 2]
-  },
-  {
-    section: "Direction",
-    q: "Faith or spirituality in your life...",
-    opts: [
-      "Plays an active role. It shapes how I see things",
-      "Is something I think about, but loosely. More personal than institutional",
-      "Isn't really part of how I move through the world",
-      "I'm actively skeptical of it"
-    ],
-    dim: "worldview", w: [0, 1, 2, 3]
   },
   {
     section: "Roles",
@@ -456,28 +478,6 @@ const QUESTIONS_DATING = [
       "Tidiness isn't something I prioritise"
     ],
     dim: "space", w: [0, 1, 2, 3]
-  },
-  {
-    section: "Regard",
-    q: "When someone you care about does something frustrating, your first instinct is...",
-    opts: [
-      "They probably had a reason. I give the benefit of the doubt",
-      "I notice it but don't jump to conclusions",
-      "I take it at face value and feel the irritation",
-      "I tend to connect it to a pattern I've noticed before"
-    ],
-    dim: "admire", w: [0, 1, 2, 3]
-  },
-  {
-    section: "Regard",
-    q: "When you think about the people you're closest to, what's the dominant feeling?",
-    opts: [
-      "Genuine admiration. There's something about them I find remarkable",
-      "Warmth. I know them fully and like them anyway",
-      "Loyalty. I'm committed to them, though I see them clearly",
-      "Caution. I care, but I'm always a little aware of what they're capable of"
-    ],
-    dim: "admire", w: [0, 1, 2, 3]
   },
   {
     section: "Finances",

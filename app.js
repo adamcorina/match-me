@@ -525,8 +525,8 @@ function compareWithCode(code) {
   renderResult(state.myVector, v2);
 }
 
-const FRIENDSHIP_DIMS = new Set(["comm","conflict","energy","rhythm","empathy","humor","boundaries","stability","values","depth","auth","lifestyle"]);
-const RELATIONSHIP_DIMS = new Set(["comm","conflict","energy","rhythm","empathy","humor","boundaries","stability","values","depth","auth","attach","intimacy","direction","lovelang","cconf","passion","differ","drive","worldview","space","admire","finances"]);
+const FRIENDSHIP_DIMS = new Set(["comm","conflict","energy","rhythm","empathy","humor","boundaries","stability","values","depth","auth","admire","direction","worldview"]);
+const RELATIONSHIP_DIMS = new Set(["comm","conflict","energy","rhythm","empathy","humor","boundaries","stability","values","depth","auth","admire","direction","worldview","attach","intimacy","lovelang","cconf","passion","differ","drive","space","finances","direction_children","roles","lifestyle"]);
 
 function renderDimCards(dims, sharedDims, v1, v2, containerId) {
   const el = document.getElementById(containerId);
