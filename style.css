@@ -103,6 +103,12 @@ html, body {
   line-height: 1.7;
 }
 
+.sub-claim {
+  font-size: 14px;
+  opacity: 0.7;
+  margin-bottom: 10px;
+}
+
 .sub-note {
   font-size: 13px;
   color: var(--text3);
