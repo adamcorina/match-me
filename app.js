@@ -662,7 +662,7 @@ function compareWithCode(code) {
   renderResult(state.myVector, v2);
 }
 
-const FRIENDSHIP_DIMS = new Set(["comm","conflict","energy","rhythm","empathy","humor","boundaries","stability","values","depth","auth","admire","direction","worldview"]);
+const FRIENDSHIP_DIMS = new Set(["comm","conflict","energy","rhythm","empathy","humor","boundaries","stability","values","depth","auth","admire","direction","worldview","lifestyle"]);
 const RELATIONSHIP_DIMS = new Set(["comm","conflict","energy","rhythm","empathy","humor","boundaries","stability","values","depth","auth","admire","direction","worldview","attach_profile","intimacy","lovelang","cconf","passion","differ","drive","space","finances","direction_children","roles","lifestyle"]);
 
 function attachPersonBars(v) {
