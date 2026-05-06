@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>match.me</title>
+<meta name="description" content="A compatibility layer you can share across apps. Take the quiz, understand the dynamic before you even meet.">
+<meta property="og:title" content="match.me">
+<meta property="og:description" content="A compatibility layer you can share across apps. Take the quiz, understand the dynamic before you even meet.">
+<meta property="og:url" content="https://match-me.velea.cc">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://match-me.velea.cc/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://match-me.velea.cc/og-image.png">
+<meta name="twitter:title" content="match.me">
+<meta name="twitter:description" content="A compatibility layer you can share across apps. Take the quiz, understand the dynamic before you even meet.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- LANDING -->
+  <div id="screen-landing" class="screen active">
+    <div class="landing-inner">
+      <div class="logo">match<span class="dot">.</span>me</div>
+      <h1>compatibility<br><em>before</em> you connect</h1>
+      <p class="sub-claim">A compatibility profile you can carry across apps — not another app to join.</p>      
+      <p class="sub">Take an 8-minute quiz. Get a code. Put it in your bio.<br>Let others understand the dynamic — as friends or something more — before you even meet.</p>
+      <p class="sub-note">One rule: be honest. High compatibility scores are only as real as your answers.</p>
+      <button class="btn-primary" onclick="startQuiz()">Start quiz →</button>
+    </div>
+    <div class="landing-visual">
+      <div class="float-card fc1">
+        <div class="fc-score">87%</div>
+        <div class="fc-label">values alignment</div>
+      </div>
+      <div class="float-card fc2">
+        <div class="fc-score">64%</div>
+        <div class="fc-label">conflict style</div>
+      </div>
+      <div class="float-card fc3">
+        <div class="fc-score">91%</div>
+        <div class="fc-label">depth & intimacy</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="screen-quiz" class="screen">
+    <div class="quiz-header">
+      <button class="btn-back" onclick="goBack()">←</button>
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill" id="prog-fill"></div></div>
+        <div class="progress-label" id="prog-label"></div>
+      </div>
+    </div>
+    <div class="quiz-body">
+      <div class="q-section" id="q-section"></div>
+      <div class="q-text" id="q-text"></div>
+      <div class="q-options" id="q-options"></div>
+    </div>
+    <div class="quiz-footer">
+      <button class="btn-primary" id="btn-next" onclick="goNext()" disabled>Continue →</button>
+    </div>
+  </div>
+
+  <!-- DATING GATE -->
+  <div id="screen-gate" class="screen">
+    <div class="gate-inner">
+      <div class="gate-icon">+</div>
+      <h2>Add dating section?</h2>
+      <p>25 more questions about attachment, intimacy and direction.<br>Dating compatibility only shows when both people opt in.</p>
+      <div class="gate-btns">
+        <button class="btn-outline" onclick="chooseDating(false)">Friendship only</button>
+        <button class="btn-primary" onclick="chooseDating(true)">Add dating</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE (your code) -->
+  <div id="screen-profile" class="screen">
+    <div class="profile-inner">
+      <div class="profile-header">
+        <div class="logo-sm">match<span class="dot">.</span>me</div>
+        <h2>Your compatibility code</h2>
+        <p>Put this in your bio. Others can use it to understand the dynamic before you even meet.</p>
+      </div>
+      <div class="code-display">
+        <div class="code-left">
+          <div id="code-toggle" class="code-toggle" style="display:none">
+            <button class="code-toggle-btn active" data-mode="full" onclick="switchCodeMode('full')">Romantic</button>
+            <button class="code-toggle-btn" data-mode="friendship" onclick="switchCodeMode('friendship')">Friendship</button>
+          </div>
+          <div class="code-value" id="my-code"></div>
+        </div>
+        <button class="btn-copy" onclick="copyCode()" id="copy-btn">Copy</button>
+      </div>
+      <div class="profile-dims" id="profile-dims"></div>
+      <div class="profile-fit" id="profile-fit"></div>
+      <div class="profile-actions">
+        <div class="check-compat">
+          <input type="text" id="input-other-code" placeholder="Enter someone's code">
+          <button class="btn-primary" onclick="checkCompat()">See compatibility</button>
+        </div>
+        <button class="btn-retake" id="btn-add-romantic" onclick="startDatingQuiz()" style="display:none">Add romantic questions</button>
+        <button class="btn-retake" onclick="startQuiz()">Retake quiz</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="screen-result" class="screen">
+    <div class="result-inner">
+      <button class="btn-back-abs" onclick="showProfile()">← Back</button>
+      <div class="result-scores">
+        <div class="result-score-wrap">
+          <div class="result-ring-wrap">
+            <svg class="ring-svg" viewBox="0 0 120 120">
+              <circle class="ring-bg" cx="60" cy="60" r="52"/>
+              <circle class="ring-fg" id="ring-fg" cx="60" cy="60" r="52" stroke-dasharray="326.7" stroke-dashoffset="326.7"/>
+            </svg>
+            <div class="result-score-inner">
+              <div class="result-score-title">dynamic</div>
+              <div class="result-pct" id="r-pct">—</div>
+              <div class="result-score-sub" id="r-lbl"></div>
+            </div>
+          </div>
+        </div>
+        <div class="result-score-wrap">
+          <div class="result-ring-wrap">
+            <svg class="ring-svg" viewBox="0 0 120 120">
+              <circle class="ring-bg" cx="60" cy="60" r="52"/>
+              <circle class="ring-fg" id="ring-growth-fg" cx="60" cy="60" r="52" stroke-dasharray="326.7" stroke-dashoffset="326.7"/>
+            </svg>
+            <div class="result-score-inner">
+              <div class="result-score-title">growth</div>
+              <div class="result-pct" id="r-growth-pct">—</div>
+              <div class="result-score-sub" id="r-growth-lbl"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="result-tabs">
+        <button class="result-tab active" id="tab-friendship" onclick="switchTab('friendship')">Friendship</button>
+        <button class="result-tab" id="tab-relationship" onclick="switchTab('relationship')">Relationship</button>
+      </div>
+      <div id="tab-panel-friendship">
+        <div class="result-dims" id="r-dims-friendship"></div>
+        <div class="result-insights" id="r-insights-friendship"></div>
+      </div>
+      <div id="tab-panel-relationship" style="display:none">
+        <div class="result-dims" id="r-dims-relationship"></div>
+        <div class="result-insights" id="r-insights-relationship"></div>
+      </div>
+    </div>
+  </div>
+
+<!-- ABOUT MODAL -->
+<div id="about-modal" class="about-overlay" style="display:none" onclick="closeAbout(event)">
+  <div class="about-box">
+    <button class="about-close" onclick="closeAbout()">×</button>
+    <div class="about-logo">match<span class="dot">.</span>me</div>
+    <p class="about-text">
+      Hi, I'm Corina. Developer, and practicing pseudo-psychologist.
+    </p>
+    <p class="about-text">
+      Two things pushed me to build this. Dating apps frustrate me: they're built to keep you scrolling, not to actually help you find someone worth your time. And separately, I've been thinking a lot about the friendships and relationships I really value. There's this feeling when you just click with someone. I wanted to understand what that actually is.
+    </p>
+    <p class="about-text">
+      So I went looking. The questions here are built on research that keeps showing up when you dig into what makes people work together: Gottman on conflict and repair, Bowlby and Hazan on attachment, Chapman's love languages, Schnarch on how much of yourself you keep when you get close to someone, Perel on desire and independence, Sternberg, Big Five, Schwartz. The good stuff.
+    </p>
+    <p class="about-text">
+      None of this predicts the future. A low score doesn't mean don't bother. A high score doesn't mean it'll be easy. It just means you go in knowing more than most people do.
+    </p>
+    <p class="about-text about-small">
+      If you got this far, you probably also think there's a better way to do this than swiping on photos.
+    </p>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="app-footer">
+  <button class="footer-about" onclick="openAbout()">About this quiz</button>
+  <span class="footer-sep">|</span>
+  <button class="footer-about" onclick="openPrivacy()">Privacy</button>
+</footer>
+
+<!-- PRIVACY MODAL -->
+<div id="privacy-modal" class="about-overlay" style="display:none" onclick="closePrivacy(event)">
+  <div class="about-box privacy-box">
+    <button class="about-close" onclick="closePrivacy()">×</button>
+    <div class="about-logo">Privacy</div>
+    <p class="privacy-intro">This tool is built to be as lightweight as possible on your data.</p>
+    <ul class="privacy-list">
+      <li>
+        <span class="privacy-icon">◦</span>
+        <span>No cookies</span>
+      </li>
+      <li>
+        <span class="privacy-icon">◦</span>
+        <span>No personal data collected</span>
+      </li>
+      <li>
+        <span class="privacy-icon">◦</span>
+        <span>Quiz results never leave your device</span>
+      </li>
+      <li>
+        <span class="privacy-icon">◦</span>
+        <div>
+          <span>Anonymous traffic stats only</span>
+          <span class="privacy-sub">via Cloudflare Web Analytics - no fingerprinting, no cross-site tracking</span>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<script src="questions.min.js"></script>
+<script src="compat.min.js"></script>
+<script src="app.min.js"></script>
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "6b588925942849d89d60c4fe7e07e8ac"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>
